@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package, Truck, Phone, MapPin, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableSelect from "./SearchableSelect";
@@ -10,7 +10,7 @@ import CsvImportDialog from "./CsvImportDialog";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
-interface Supplier { id: string; name: string; }
+interface Supplier { id: string; name: string; phone: string | null; address: string | null; contact_person: string | null; payment_terms: string | null; }
 interface Product { id: string; name: string; price: number; unit: string; buying_price: number | null; }
 interface LineItem {
   product_id: string; product_name: string; batch_number: string;
@@ -56,10 +56,10 @@ const StockPurchasePage = () => {
 
   const fetchData = async () => {
     const [{ data: s }, { data: p }] = await Promise.all([
-      supabase.from("suppliers").select("id, name").order("name"),
+      supabase.from("suppliers").select("id, name, phone, address, contact_person, payment_terms").order("name"),
       supabase.from("products").select("id, name, price, unit, buying_price").order("name"),
     ]);
-    setSuppliers(s || []);
+    setSuppliers((s || []) as Supplier[]);
     setProducts((p || []) as Product[]);
     setLoading(false);
   };
@@ -267,6 +267,25 @@ const StockPurchasePage = () => {
         total_amount: totalAmount, amount_paid: 0, status: "unpaid",
       } as any);
 
+      // Create purchase order linked to supplier
+      const { data: po } = await supabase.from("purchase_orders").insert({
+        supplier_id: supplierId,
+        total_amount: totalAmount,
+        notes: `Invoice: ${invoiceNumber}. ${notes}`.trim(),
+        status: "received",
+      } as any).select().single();
+
+      // Create purchase order items linked to products
+      if (po) {
+        const poItems = lines.map(line => ({
+          purchase_order_id: (po as any).id,
+          product_id: line.product_id,
+          quantity: line.quantity,
+          unit_price: line.purchase_price,
+        }));
+        await supabase.from("purchase_order_items").insert(poItems as any);
+      }
+
       for (const line of lines) {
         await supabase.from("product_batches").insert({
           product_id: line.product_id, batch_number: line.batch_number,
@@ -372,6 +391,40 @@ const StockPurchasePage = () => {
                 placeholder="Optional notes about this purchase..." />
             </div>
           </div>
+
+          {/* Supplier Info Card - shows when supplier selected */}
+          {supplierId && (() => {
+            const sup = suppliers.find(s => s.id === supplierId);
+            if (!sup) return null;
+            return (
+              <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Truck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{sup.name}</p>
+                    {sup.contact_person && <p className="text-xs text-muted-foreground">{sup.contact_person}</p>}
+                  </div>
+                </div>
+                {sup.phone && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" /> {sup.phone}
+                  </div>
+                )}
+                {sup.address && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5" /> {sup.address}
+                  </div>
+                )}
+                {sup.payment_terms && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <FileText className="h-3.5 w-3.5" /> Terms: {sup.payment_terms}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Line Items - Card Based */}
           <div className="space-y-3">
