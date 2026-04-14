@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Package, ShoppingBag, FileText, LogOut, Settings,
   Menu, ShoppingCart, Users, Eye, BarChart3, History, Pill,
-  BookOpen, AlertTriangle, Layers, Truck, PackagePlus, ClipboardList, FileArchive,
+  BookOpen, AlertTriangle, Layers, Truck, PackagePlus, ClipboardList,
   Wifi, WifiOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
