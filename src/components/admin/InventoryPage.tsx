@@ -352,11 +352,30 @@ const InventoryPage = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className={`h-2 w-2 rounded-full ${sl.color}`} />
-                    <span className="text-xs text-muted-foreground">{p.stock} {p.unit}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {p.stock} {p.unit}
+                      {(() => {
+                        const bd = parseUnitBreakdown((p as any).unit_description);
+                        if (bd.length > 0) return ` (${bd.map(b => `${p.stock * b.perFullUnit} ${b.name}s`).join(', ')})`;
+                        if ((p as any).pieces_per_unit > 1) return ` (${p.stock * (p as any).pieces_per_unit} pcs)`;
+                        return '';
+                      })()}
+                    </span>
                   </div>
                 </div>
                 {(p as any).unit_description && (
-                  <p className="text-[10px] text-muted-foreground italic">{(p as any).unit_description}</p>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground italic">{(p as any).unit_description}</p>
+                    {(() => {
+                      const bd = parseUnitBreakdown((p as any).unit_description);
+                      const prices = (p as any).unit_prices || {};
+                      if (bd.length === 0) return null;
+                      return bd.map(b => {
+                        const subPrice = prices[b.name] > 0 ? prices[b.name] : Math.round(Number(p.price) / b.perFullUnit);
+                        return <p key={b.name} className="text-[10px] text-muted-foreground">Per {b.name}: <strong>UGX {subPrice.toLocaleString()}</strong></p>;
+                      });
+                    })()}
+                  </div>
                 )}
                 {p.batch_number && (
                   <p className="text-[10px] text-muted-foreground font-mono">Batch: {p.batch_number}</p>
