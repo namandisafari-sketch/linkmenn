@@ -155,6 +155,29 @@ const StockPurchasePage = () => {
     const invoiceNum = purchase.narration?.match(/Invoice:\s*([^\s.]+)/)?.[1] || purchase.voucher_number;
     const items = purchaseItems[purchase.id] || [];
     const invoice = items.find((i: any) => i.type === "invoice");
+    const purchasedItems = items.filter((i: any) => i.type === "item");
+    const itemsTableHtml = purchasedItems.length > 0 ? `
+      <div style="margin:12px 0;">
+        <p style="font-weight:800;font-size:12px;margin-bottom:6px;">Items Purchased</p>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="border-bottom:1px solid #ccc;">
+            <th style="text-align:left;padding:4px 2px;">#</th>
+            <th style="text-align:left;padding:4px 2px;">Product</th>
+            <th style="text-align:right;padding:4px 2px;">Qty</th>
+            <th style="text-align:right;padding:4px 2px;">Rate</th>
+            <th style="text-align:right;padding:4px 2px;">Amount</th>
+          </tr></thead>
+          <tbody>${purchasedItems.map((item: any, idx: number) => `
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:3px 2px;">${idx + 1}</td>
+              <td style="padding:3px 2px;">${item.products?.name || item.description || "—"}</td>
+              <td style="text-align:right;padding:3px 2px;">${item.quantity}</td>
+              <td style="text-align:right;padding:3px 2px;">UGX ${Number(item.rate).toLocaleString()}</td>
+              <td style="text-align:right;padding:3px 2px;font-weight:600;">UGX ${Number(item.amount).toLocaleString()}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>` : "";
     const receiptHtml = `<html><head><title>Purchase Receipt</title>
       <style>
         @page { size: ${settings.paperWidth} auto; margin: 4mm; }
@@ -187,6 +210,7 @@ const StockPurchasePage = () => {
           <div class="meta-row"><span class="meta-label">Date</span><span class="meta-value">${format(new Date(purchase.voucher_date), "dd MMM yyyy")}</span></div>
           ${invoice ? `<div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value">${(invoice as any).status?.toUpperCase()}</span></div>` : ""}
         </div>
+        ${itemsTableHtml}
         <div class="total"><span class="total-label">TOTAL AMOUNT</span><span class="total-value">UGX ${Number(purchase.total_amount).toLocaleString()}</span></div>
         <div class="footer">
           <p>Printed on ${new Date().toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
