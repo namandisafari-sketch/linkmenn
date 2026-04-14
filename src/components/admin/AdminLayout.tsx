@@ -13,24 +13,23 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { label: "POS / Sales", icon: ShoppingCart, path: "/admin/pos" },
-  { label: "Inventory", icon: Package, path: "/admin/inventory" },
-  { label: "Stock Purchase", icon: PackagePlus, path: "/admin/stock-purchase" },
-  { label: "Batch Tracking", icon: Layers, path: "/admin/batches" },
-  { label: "Product Preview", icon: Eye, path: "/admin/preview" },
-  { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
-  { label: "Sales History", icon: History, path: "/admin/sales-history" },
-  { label: "Sales Report", icon: FileText, path: "/admin/reports" },
-  { label: "Day Book", icon: BookOpen, path: "/admin/day-book" },
-  { label: "Accounting", icon: BookOpen, path: "/admin/accounting" },
-  { label: "Financial Statements", icon: BarChart3, path: "/admin/balance-sheet" },
-  
-  { label: "Prescription Rules", icon: Pill, path: "/admin/prescriptions" },
-  { label: "Customer Accounts", icon: Users, path: "/admin/credits" },
-  { label: "Customer Analytics", icon: BarChart3, path: "/admin/analytics" },
-  { label: "Suppliers", icon: Truck, path: "/admin/suppliers" },
-  { label: "Settings", icon: Settings, path: "/admin/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/admin", shortcut: "1" },
+  { label: "POS / Sales", icon: ShoppingCart, path: "/admin/pos", shortcut: "2" },
+  { label: "Inventory", icon: Package, path: "/admin/inventory", shortcut: "3" },
+  { label: "Stock Purchase", icon: PackagePlus, path: "/admin/stock-purchase", shortcut: "4" },
+  { label: "Batch Tracking", icon: Layers, path: "/admin/batches", shortcut: "5" },
+  { label: "Product Preview", icon: Eye, path: "/admin/preview", shortcut: "" },
+  { label: "Orders", icon: ShoppingBag, path: "/admin/orders", shortcut: "6" },
+  { label: "Sales History", icon: History, path: "/admin/sales-history", shortcut: "" },
+  { label: "Sales Report", icon: FileText, path: "/admin/reports", shortcut: "7" },
+  { label: "Day Book", icon: BookOpen, path: "/admin/day-book", shortcut: "" },
+  { label: "Accounting", icon: BookOpen, path: "/admin/accounting", shortcut: "8" },
+  { label: "Expenses", icon: AlertTriangle, path: "/admin/expenses", shortcut: "9" },
+  { label: "Prescription Rules", icon: Pill, path: "/admin/prescriptions", shortcut: "" },
+  { label: "Customer Accounts", icon: Users, path: "/admin/credits", shortcut: "0" },
+  { label: "Customer Analytics", icon: BarChart3, path: "/admin/analytics", shortcut: "" },
+  { label: "Suppliers", icon: Truck, path: "/admin/suppliers", shortcut: "" },
+  { label: "Settings", icon: Settings, path: "/admin/settings", shortcut: "" },
 ];
 
 interface AdminLayoutProps {
@@ -93,7 +92,10 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
                 }`}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
+                {sidebarOpen && <span className="flex-1">{item.label}</span>}
+                {sidebarOpen && item.shortcut && (
+                  <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-primary-foreground/10 text-primary-foreground/50">Alt+{item.shortcut}</kbd>
+                )}
               </Link>
             ))}
           </nav>

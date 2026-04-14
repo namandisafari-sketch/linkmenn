@@ -31,7 +31,7 @@ import SupplierManagementPage from "@/components/admin/SupplierManagementPage";
 import StockPurchasePage from "@/components/admin/StockPurchasePage";
 // StockUpdatePage and PurchaseHistoryPage removed - consolidated
 import DayBookPage from "@/components/admin/DayBookPage";
-import BalanceSheetPage from "@/components/admin/BalanceSheetPage";
+import ExpensePage from "@/components/admin/ExpensePage";
 
 const DashboardOverview = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -252,19 +252,28 @@ const AdminDashboard = () => {
     }
   }, [loading, isAdmin, navigate]);
 
-  // Global admin keyboard shortcuts
+  // Global admin keyboard shortcuts (Alt+number for page nav)
   useEffect(() => {
+    const shortcuts: Record<string, string> = {
+      "1": "/admin", "2": "/admin/pos", "3": "/admin/inventory",
+      "4": "/admin/stock-purchase", "5": "/admin/batches",
+      "6": "/admin/orders", "7": "/admin/reports", "8": "/admin/accounting",
+      "9": "/admin/expenses", "0": "/admin/credits",
+    };
     const handleGlobalKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
-      if (isInput) return;
-
-      // P - Go to POS
-      if (e.key === "p" || e.key === "P") {
-        if (path !== "/admin/pos") {
-          e.preventDefault();
-          navigate("/admin/pos");
-        }
+      
+      // Alt+number shortcuts work even in inputs
+      if (e.altKey && shortcuts[e.key]) {
+        e.preventDefault();
+        navigate(shortcuts[e.key]);
+        return;
+      }
+      
+      // P shortcut only outside inputs
+      if (!isInput && (e.key === "p" || e.key === "P")) {
+        if (path !== "/admin/pos") { e.preventDefault(); navigate("/admin/pos"); }
       }
     };
     window.addEventListener("keydown", handleGlobalKey);
@@ -290,7 +299,7 @@ const AdminDashboard = () => {
     
     if (path === "/admin/suppliers") return <SupplierManagementPage />;
     if (path === "/admin/day-book") return <DayBookPage />;
-    if (path === "/admin/balance-sheet") return <BalanceSheetPage />;
+    if (path === "/admin/expenses") return <ExpensePage />;
     if (path === "/admin/settings") return <SettingsPage />;
     return <DashboardOverview />;
   };
@@ -311,7 +320,7 @@ const AdminDashboard = () => {
     
     if (path === "/admin/suppliers") return "Supplier Management";
     if (path === "/admin/day-book") return "Day Book";
-    if (path === "/admin/balance-sheet") return "Financial Statements";
+    if (path === "/admin/expenses") return "Expenses";
     if (path === "/admin/settings") return "Settings";
     return "Dashboard";
   };
