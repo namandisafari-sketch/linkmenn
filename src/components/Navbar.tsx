@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import logo from "@/assets/marvid-logo.png";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,19 +12,19 @@ const Navbar = () => {
   const { itemCount } = useCart();
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container flex items-center justify-between h-16">
+    <nav className="sticky top-0 z-50 bg-background border-b border-border">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Marvid Pharmaceutical UG" className="h-10" />
+          <img src={logo} alt="Marvin Pharma Ltd" className="h-10" />
         </Link>
 
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8">
           <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">Home</Link>
-          <Link to="/prescription" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Prescription</Link>
+          <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">About</a>
+          <a href="#contact" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Contact</a>
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <Link to="/checkout">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
@@ -37,13 +36,18 @@ const Navbar = () => {
             </Button>
           </Link>
           {user ? (
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <>
+              <Link to="/admin">
+                <Button variant="ghost" size="icon"><User className="h-5 w-5" /></Button>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={signOut}>
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </>
           ) : (
             <Link to="/auth">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
+              <Button className="rounded-full bg-[hsl(140,60%,35%)] hover:bg-[hsl(140,60%,30%)] text-white font-semibold px-6 h-9">
+                Partner With Us
               </Button>
             </Link>
           )}
@@ -55,9 +59,10 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background animate-fade-in">
-          <div className="container py-4 flex flex-col gap-3">
+          <div className="px-6 py-4 flex flex-col gap-3">
             <Link to="/" className="text-sm font-medium py-2" onClick={() => setMobileOpen(false)}>Home</Link>
-            <Link to="/prescription" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>Prescription</Link>
+            <a href="#about" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>About</a>
+            <a href="#contact" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>Contact</a>
             {user ? (
               <>
                 <Link to="/admin" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>Admin</Link>

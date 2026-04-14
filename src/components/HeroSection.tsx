@@ -1,72 +1,49 @@
-import { Search, Camera, Truck, Shield, Clock, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import pharmacyImg from "@/assets/pharmacy-interior.jpg";
 
 const HeroSection = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
   return (
-    <section className="gradient-hero py-20 md:py-28 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary-foreground/20 blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-primary-foreground/10 blur-3xl" />
-      </div>
+    <section className="py-16 md:py-24 bg-background">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Left content */}
+          <div>
+            <span className="inline-block text-xs font-semibold text-[hsl(140,60%,35%)] border border-[hsl(140,60%,35%)] rounded-full px-4 py-1.5 mb-6">
+              Committed to Better Health
+            </span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">
+              Quality Pharmaceuticals<br />
+              for <span className="text-[hsl(140,60%,35%)]">Uganda & Beyond</span>
+            </h1>
+            <p className="text-muted-foreground leading-relaxed mb-10 max-w-lg">
+              At Marvin Pharma, we're dedicated to advancing public health by providing affordable, high-quality medicines, with a special focus on combating malaria. We partner with global health leaders to ensure reliable supply chains and effective healthcare solutions.
+            </p>
 
-      <div className="container text-center relative z-10">
-        <div className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 rounded-full px-4 py-1.5 mb-6 animate-fade-in">
-          <Shield className="h-3.5 w-3.5 text-primary-foreground" />
-          <span className="text-xs font-medium text-primary-foreground">Licensed & Trusted Pharmacy</span>
-        </div>
-
-        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 animate-fade-in leading-tight">
-          Your Health, Our Priority.<br />
-          <span className="opacity-90">Delivered to Your Door</span>
-        </h1>
-        <p className="text-primary-foreground/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          Quality medicines, fast delivery across Uganda. Upload your prescription and let us handle the rest.
-        </p>
-
-        {/* Search Bar */}
-        <div className="max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <div className="relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search medicines, supplements, health products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-14 pr-5 rounded-full bg-background text-foreground shadow-xl text-sm outline-none focus:ring-2 focus:ring-ring transition-shadow hover:shadow-2xl"
-            />
+            {/* Stats */}
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { value: "9+", label: "Years of Service" },
+                { value: "2,000+", label: "Products" },
+                { value: "10+", label: "Districts" },
+                { value: "10+", label: "Partners" },
+              ].map((s) => (
+                <div key={s.label} className="text-center border border-border rounded-xl p-4">
+                  <div className="text-xl md:text-2xl font-bold text-[hsl(210,80%,45%)]">{s.value}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Link to="/auth">
-            <Button size="lg" className="rounded-full bg-background text-primary hover:bg-background/90 font-semibold gap-2 shadow-lg h-12 px-8">
-              <Camera className="h-4 w-4" /> Upload Prescription
-            </Button>
-          </Link>
-          <Button size="lg" variant="outline" className="rounded-full border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 font-semibold gap-2 h-12 px-8">
-            <Truck className="h-4 w-4" /> Track Order
-          </Button>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-          <div className="flex items-center gap-2 text-primary-foreground/70">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm font-medium">Same-Day Delivery</span>
-          </div>
-          <div className="flex items-center gap-2 text-primary-foreground/70">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm font-medium">100% Genuine</span>
-          </div>
-          <div className="flex items-center gap-2 text-primary-foreground/70">
-            <Star className="h-4 w-4" />
-            <span className="text-sm font-medium">500+ Products</span>
+          {/* Right image with overlay */}
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            <img src={pharmacyImg} alt="Pharmacy interior" className="w-full h-[400px] md:h-[480px] object-cover" width={1280} height={864} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <h3 className="text-xl font-bold mb-2">Our Commitment to Malaria Control</h3>
+              <p className="text-sm text-white/80 leading-relaxed">
+                Through global partnerships and local outreach, we distribute WHO-prequalified anti-malarial drugs to combat malaria in Uganda and across Africa.
+              </p>
+            </div>
           </div>
         </div>
       </div>
