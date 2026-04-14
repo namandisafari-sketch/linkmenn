@@ -174,7 +174,7 @@ const POSPage = () => {
     const fetch = async () => {
       setLoading(true);
       const [{ data: prods }, { data: cats }] = await Promise.all([
-        supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
+        supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
         supabase.from("categories").select("*").order("name"),
       ]);
       setProducts((prods as Product[]) || []);
@@ -827,7 +827,7 @@ const POSPage = () => {
       setSaleDate(new Date().toISOString().split("T")[0]);
       setSaleTime(`${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`);
 
-      const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
+      const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
       setProducts((prods as Product[]) || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to create order");
