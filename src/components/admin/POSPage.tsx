@@ -233,10 +233,10 @@ const POSPage = () => {
     }
   };
 
-  const getEffectivePrice = (product: Product, customPrice: number | null, sellingByPiece: boolean = false) => {
+  const getEffectivePrice = (product: Product, customPrice: number | null, sellingUnit: { name: string; perFullUnit: number } | null = null) => {
     if (customPrice !== null) return customPrice;
     const basePrice = customerType === "wholesale" && product.wholesale_price > 0 ? product.wholesale_price : product.price;
-    if (sellingByPiece && product.pieces_per_unit > 1) return Math.round(basePrice / product.pieces_per_unit);
+    if (sellingUnit) return Math.round(basePrice / sellingUnit.perFullUnit);
     return basePrice;
   };
 
@@ -252,17 +252,16 @@ const POSPage = () => {
     setSelectedProductIndex(-1);
   }, [filtered.length, search, selectedCategory]);
 
-  const addToCart = useCallback((product: Product, qty: number = 1, byPiece: boolean = false) => {
+  const addToCart = useCallback((product: Product, qty: number = 1, unit: { name: string; perFullUnit: number } | null = null) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id && i.sellingByPiece === byPiece);
-      const maxQty = byPiece ? product.stock * (product.pieces_per_unit || 1) : product.stock;
-      // Also account for existing cart items of the OTHER selling mode
-      const otherItem = prev.find((i) => i.product.id === product.id && i.sellingByPiece !== byPiece);
-      const otherStockUsed = otherItem
-        ? (otherItem.sellingByPiece ? otherItem.quantity / (product.pieces_per_unit || 1) : otherItem.quantity)
-        : 0;
+      const unitKey = unit ? unit.name : '__full__';
+      const existing = prev.find((i) => i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') === unitKey);
+      const maxQty = unit ? product.stock * unit.perFullUnit : product.stock;
+      // Account for other selling modes of same product
+      const otherItems = prev.filter((i) => i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') !== unitKey);
+      const otherStockUsed = otherItems.reduce((sum, oi) => sum + (oi.sellingUnit ? oi.quantity / oi.sellingUnit.perFullUnit : oi.quantity), 0);
       const availableStock = product.stock - otherStockUsed;
-      const availableQty = byPiece ? availableStock * (product.pieces_per_unit || 1) : availableStock;
+      const availableQty = unit ? availableStock * unit.perFullUnit : availableStock;
 
       if (existing) {
         const newQty = existing.quantity + qty;
@@ -270,13 +269,13 @@ const POSPage = () => {
           toast.error("Not enough stock");
           return prev;
         }
-        return prev.map((i) => (i.product.id === product.id && i.sellingByPiece === byPiece) ? { ...i, quantity: newQty } : i);
+        return prev.map((i) => (i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') === unitKey) ? { ...i, quantity: newQty } : i);
       }
       if (qty > availableQty) {
         toast.error("Not enough stock");
         return prev;
       }
-      return [...prev, { product, quantity: qty, customPrice: null, sellingByPiece: byPiece }];
+      return [...prev, { product, quantity: qty, customPrice: null, sellingUnit: unit }];
     });
   }, []);
 
