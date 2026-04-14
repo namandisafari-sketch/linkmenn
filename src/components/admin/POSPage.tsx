@@ -1283,10 +1283,31 @@ const POSPage = () => {
         </div>
 
         <div className="p-4 border-t border-border space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">Total</span>
-            <span className="text-lg font-bold text-primary">UGX {total.toLocaleString()}</span>
-          </div>
+          {(() => {
+            const totalProfit = cart.reduce((sum, item) => {
+              const ep = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
+              const cp = item.sellingByPiece && item.product.pieces_per_unit > 1
+                ? item.product.buying_price / item.product.pieces_per_unit
+                : item.product.buying_price;
+              return sum + (ep - cp) * item.quantity;
+            }, 0);
+            return (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Total</span>
+                  <span className="text-lg font-bold text-primary">UGX {total.toLocaleString()}</span>
+                </div>
+                {cart.length > 0 && (
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground">Total Profit</span>
+                    <span className={`font-bold ${totalProfit > 0 ? 'text-emerald-600' : totalProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      UGX {Math.round(totalProfit).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </>
+            );
+          })()}
           <Button className="w-full gap-2" size="lg" disabled={cart.length === 0} onClick={() => { setCheckoutOpen(true); setAmountGiven(""); }}>
             <CreditCard className="h-4 w-4" /> Checkout <kbd className="ml-1 text-[10px] opacity-60 font-mono">F8</kbd>
           </Button>
