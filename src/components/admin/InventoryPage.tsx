@@ -167,6 +167,7 @@ const InventoryPage = () => {
       unit: form.unit,
       pieces_per_unit: Number(form.pieces_per_unit) || 1,
       unit_description: form.unit_description || null,
+      unit_prices: Object.keys(form.unit_prices).length > 0 ? form.unit_prices : null,
       stock: Number(form.stock),
       batch_number: form.batch_number || null,
       expiry_date: form.expiry_date || null,
