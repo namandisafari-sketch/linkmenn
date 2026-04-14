@@ -29,8 +29,7 @@ import AccountingPage from "@/components/admin/AccountingPage";
 import BatchManagementPage from "@/components/admin/BatchManagementPage";
 import SupplierManagementPage from "@/components/admin/SupplierManagementPage";
 import StockPurchasePage from "@/components/admin/StockPurchasePage";
-import StockUpdatePage from "@/components/admin/StockUpdatePage";
-// PurchaseHistoryPage removed - consolidated into StockPurchasePage
+// StockUpdatePage and PurchaseHistoryPage removed - consolidated
 import DayBookPage from "@/components/admin/DayBookPage";
 import BalanceSheetPage from "@/components/admin/BalanceSheetPage";
 
@@ -279,7 +278,6 @@ const AdminDashboard = () => {
     if (path === "/admin/pos") return <POSPage />;
     if (path === "/admin/inventory") return <InventoryPage />;
     if (path === "/admin/stock-purchase") return <StockPurchasePage />;
-    if (path === "/admin/stock-update") return <StockUpdatePage />;
     if (path === "/admin/batches") return <BatchManagementPage />;
     if (path === "/admin/orders") return <OrdersPage />;
     if (path === "/admin/reports") return <SalesReportPage />;
@@ -301,7 +299,6 @@ const AdminDashboard = () => {
     if (path === "/admin/pos") return "Point of Sale";
     if (path === "/admin/inventory") return "Inventory";
     if (path === "/admin/stock-purchase") return "Stock Purchase";
-    if (path === "/admin/stock-update") return "Stock Update / Adjustments";
     if (path === "/admin/batches") return "Batch Tracking (FEFO)";
     if (path === "/admin/orders") return "Orders";
     if (path === "/admin/reports") return "Sales Report";
