@@ -1205,52 +1205,78 @@ const POSPage = () => {
                 {item.customPrice !== null && editingPriceId !== cartKey && (
                   <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</p>
                 )}
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    {editingQtyId === cartKey ? (
-                      <input
-                        type="number"
-                        value={tempQty}
-                        onChange={(e) => setTempQty(e.target.value)}
-                        onBlur={() => {
-                          const q = parseFloat(tempQty);
-                          if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
-                          setEditingQtyId(null);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            const q = parseFloat(tempQty);
-                            if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
-                            setEditingQtyId(null);
-                          }
-                          if (e.key === "Escape") setEditingQtyId(null);
-                        }}
-                        className="w-14 h-6 text-center text-sm font-medium border border-primary rounded bg-background outline-none"
-                        autoFocus
-                        min={1}
-                        max={maxQty}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setEditingQtyId(cartKey);
-                          setTempQty(String(item.quantity));
-                        }}
-                        className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
-                        title="Click to type exact quantity"
-                      >
-                        {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
-                      </button>
-                    )}
-                    <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-                  <span className="text-sm font-semibold">UGX {(effectivePrice * item.quantity).toLocaleString()}</span>
-                </div>
+                {(() => {
+                  const costPrice = item.sellingByPiece && item.product.pieces_per_unit > 1
+                    ? item.product.buying_price / item.product.pieces_per_unit
+                    : item.product.buying_price;
+                  const unitProfit = effectivePrice - costPrice;
+                  const totalProfit = unitProfit * item.quantity;
+                  return (
+                    <>
+                      {item.product.buying_price > 0 && (
+                        <div className="flex items-center justify-between text-[10px] mt-1">
+                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</span>
+                          <span className={`font-semibold ${unitProfit > 0 ? 'text-emerald-600' : unitProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          {editingQtyId === cartKey ? (
+                            <input
+                              type="number"
+                              value={tempQty}
+                              onChange={(e) => setTempQty(e.target.value)}
+                              onBlur={() => {
+                                const q = parseFloat(tempQty);
+                                if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
+                                setEditingQtyId(null);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const q = parseFloat(tempQty);
+                                  if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
+                                  setEditingQtyId(null);
+                                }
+                                if (e.key === "Escape") setEditingQtyId(null);
+                              }}
+                              className="w-14 h-6 text-center text-sm font-medium border border-primary rounded bg-background outline-none"
+                              autoFocus
+                              min={1}
+                              max={maxQty}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setEditingQtyId(cartKey);
+                                setTempQty(String(item.quantity));
+                              }}
+                              className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
+                              title="Click to type exact quantity"
+                            >
+                              {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
+                            </button>
+                          )}
+                          <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold block">UGX {(effectivePrice * item.quantity).toLocaleString()}</span>
+                          {item.product.buying_price > 0 && (
+                            <span className={`text-[10px] font-semibold ${totalProfit > 0 ? 'text-emerald-600' : totalProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              +UGX {Math.round(totalProfit).toLocaleString()} profit
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             );
           })}
