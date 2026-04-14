@@ -492,9 +492,66 @@ const InventoryPage = () => {
               <div>
                 <label className="text-sm font-medium mb-1 block">Unit Description</label>
                 <Input value={form.unit_description} onChange={(e) => setForm({ ...form, unit_description: e.target.value })} placeholder="e.g. 1 Pack = 1 Strip = 50 Tablets" />
-                <p className="text-[10px] text-muted-foreground mt-0.5">Breakdown shown at POS</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Breakdown shown at POS (e.g. 1 pack =3strips=30tabs)</p>
               </div>
             </div>
+            {/* Dynamic sub-unit pricing */}
+            {(() => {
+              const breakdown = parseUnitBreakdown(form.unit_description);
+              if (breakdown.length === 0) return null;
+              return (
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <p className="text-sm font-medium">Sub-Unit Prices</p>
+                  <p className="text-[10px] text-muted-foreground">Set custom selling prices for each sub-unit. Leave 0 to auto-calculate from {form.unit} price.</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {breakdown.map(bu => {
+                      const autoPrice = form.price > 0 ? Math.round(form.price / bu.perFullUnit) : 0;
+                      const currentPrice = form.unit_prices[bu.name] || 0;
+                      return (
+                        <div key={bu.name}>
+                          <label className="text-xs font-medium mb-1 block capitalize">Per {bu.name} (UGX)</label>
+                          <Input
+                            type="number"
+                            value={currentPrice || ""}
+                            onChange={(e) => setForm({
+                              ...form,
+                              unit_prices: { ...form.unit_prices, [bu.name]: Number(e.target.value) || 0 }
+                            })}
+                            placeholder={`Auto: ${autoPrice.toLocaleString()}`}
+                            className="h-8 text-sm"
+                          />
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            1 {form.unit} = {bu.perFullUnit} {bu.name}s
+                            {currentPrice > 0 && ` → ${bu.perFullUnit} × ${currentPrice.toLocaleString()} = UGX ${(bu.perFullUnit * currentPrice).toLocaleString()}`}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {(() => {
+                    const filledPrices = breakdown.filter(bu => (form.unit_prices[bu.name] || 0) > 0);
+                    if (filledPrices.length === 0 || form.buying_price <= 0) return null;
+                    return (
+                      <div className="text-[10px] text-muted-foreground border-t border-border pt-2 mt-2 space-y-0.5">
+                        {filledPrices.map(bu => {
+                          const unitCost = form.buying_price / bu.perFullUnit;
+                          const unitPrice = form.unit_prices[bu.name];
+                          const profit = unitPrice - unitCost;
+                          return (
+                            <div key={bu.name} className="flex justify-between">
+                              <span className="capitalize">Per {bu.name}: Cost UGX {Math.round(unitCost).toLocaleString()}</span>
+                              <span className={profit > 0 ? 'text-emerald-600 font-semibold' : 'text-destructive font-semibold'}>
+                                Profit: UGX {Math.round(profit).toLocaleString()} ({Math.round((profit / unitCost) * 100)}%)
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            })()}
             <div className="grid grid-cols-4 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Buying Price (UGX)</label>
