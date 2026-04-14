@@ -486,15 +486,17 @@ const POSPage = () => {
           return;
         }
 
-        // P - Add selected product by piece
+        // P - Add selected product by smallest sub-unit from unit_description
         if (e.key === "p" || e.key === "P") {
           if (selectedProductIndex >= 0 && selectedProductIndex < filtered.length) {
             const p = filtered[selectedProductIndex];
-            if (p.pieces_per_unit > 1) {
+            const breakdown = parseUnitBreakdown(p.unit_description);
+            if (breakdown.length > 0) {
               e.preventDefault();
-              addToCart(p, 1, true);
+              const smallest = breakdown[breakdown.length - 1];
+              addToCart(p, 1, smallest);
               lastAddedIdRef.current = p.id;
-              toast.success(`Added 1 piece of ${p.name}`);
+              toast.success(`Added 1 ${smallest.name} of ${p.name}`);
               setSelectedProductIndex(-1);
             }
           }
