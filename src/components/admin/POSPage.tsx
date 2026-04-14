@@ -953,7 +953,7 @@ const POSPage = () => {
           const price = getEffectivePrice(i.product, i.customPrice, i.sellingUnit);
           const hasCustom = i.customPrice !== null || (customerType === "wholesale" && i.product.wholesale_price > 0);
           const qtyLabel = i.sellingUnit ? `${i.quantity} ${i.sellingUnit.name}s` : String(i.quantity);
-          const pieceNote = i.sellingUnit ? `<br/><span class="item-note">Sold by piece @ UGX ${price.toLocaleString()}/pc</span>` : "";
+          const pieceNote = i.sellingUnit ? `<br/><span class="item-note">Sold by ${i.sellingUnit.name} @ UGX ${price.toLocaleString()}/${i.sellingUnit.name}</span>` : "";
           return `<div class="item-row"><span class="item-name">${i.product.name}${pieceNote}${hasCustom ? `<br/><span class="item-note">${i.customPrice !== null ? "Negotiated price" : "Wholesale price"}: UGX ${price.toLocaleString()}/${i.sellingUnit ? i.sellingUnit.name : "unit"}</span>` : ""}</span><span class="item-qty">${qtyLabel}</span><span class="item-price">UGX ${(price * i.quantity).toLocaleString()}</span></div>`;
         }).join("")}
         ${(() => {
