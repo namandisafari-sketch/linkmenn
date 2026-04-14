@@ -21,6 +21,34 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action || "bootstrap";
 
+    if (action === "upsert-stock") {
+      const { products } = body;
+      if (!products || !Array.isArray(products)) throw new Error("products array required");
+      let updated = 0, failed = 0;
+      for (let i = 0; i < products.length; i += 50) {
+        const batch = products.slice(i, i + 50);
+        for (const p of batch) {
+          const { error } = await adminClient.from("products").upsert({
+            id: p.id,
+            name: p.name,
+            price: p.price || 0,
+            stock: p.stock || 0,
+            unit: p.unit || "Piece",
+            batch_number: p.batch_number || null,
+            expiry_date: p.expiry_date || null,
+            is_active: p.is_active !== false,
+            category_id: p.category_id || null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "id" });
+          if (error) { console.error(p.name, error); failed++; } else { updated++; }
+        }
+      }
+      return new Response(
+        JSON.stringify({ success: true, updated, failed }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "import-products") {
       const { categories, products } = body;
       
