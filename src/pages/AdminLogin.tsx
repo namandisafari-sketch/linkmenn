@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Lock, User, ShieldAlert } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Lock, User, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -43,6 +43,9 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+      <Link to="/" className="absolute top-6 left-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft className="h-4 w-4" /> Back to Home
+      </Link>
       <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-8 animate-fade-in">
         <div className="text-center mb-8">
           <img src={logo} alt="Marvid" className="h-24 mx-auto mb-4" />
