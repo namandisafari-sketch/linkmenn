@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { Save, RotateCcw, Eye, Upload, X, Loader2, Maximize2 } from "lucide-react";
-import DataExportSection from "./DataExportSection";
 import ExcelExportSection from "./ExcelExportSection";
 import SmartImportEngine from "./SmartImportEngine";
 import { Button } from "@/components/ui/button";
@@ -151,9 +150,6 @@ const SettingsPage = () => {
     <div className="max-w-3xl space-y-6">
       {/* Full System Excel Export */}
       <ExcelExportSection />
-
-      {/* CSV Data Export */}
-      <DataExportSection />
 
       {/* Smart Import Engine */}
       <SmartImportEngine />
