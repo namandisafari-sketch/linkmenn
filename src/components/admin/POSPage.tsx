@@ -29,8 +29,26 @@ interface CartItem {
   product: Product;
   quantity: number;
   customPrice: number | null;
-  sellingByPiece: boolean;
+  sellingUnit: { name: string; perFullUnit: number } | null;
 }
+
+// Parse unit_description like "1 pack =3strip=30tabs" into sub-unit options
+const parseUnitBreakdown = (unitDescription: string | null): { name: string; perFullUnit: number }[] => {
+  if (!unitDescription) return [];
+  // Split by = and parse each segment: "1 pack", "3strip", "30tabs"
+  const segments = unitDescription.split("=").map(s => s.trim()).filter(Boolean);
+  if (segments.length <= 1) return [];
+  const results: { name: string; perFullUnit: number }[] = [];
+  for (let i = 1; i < segments.length; i++) {
+    const match = segments[i].match(/^(\d+)\s*(.+)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const name = match[2].trim().replace(/s$/, ''); // normalize plural
+      if (count > 0) results.push({ name, perFullUnit: count });
+    }
+  }
+  return results;
+};
 
 interface Category {
   id: string;
@@ -215,10 +233,10 @@ const POSPage = () => {
     }
   };
 
-  const getEffectivePrice = (product: Product, customPrice: number | null, sellingByPiece: boolean = false) => {
+  const getEffectivePrice = (product: Product, customPrice: number | null, sellingUnit: { name: string; perFullUnit: number } | null = null) => {
     if (customPrice !== null) return customPrice;
     const basePrice = customerType === "wholesale" && product.wholesale_price > 0 ? product.wholesale_price : product.price;
-    if (sellingByPiece && product.pieces_per_unit > 1) return Math.round(basePrice / product.pieces_per_unit);
+    if (sellingUnit) return Math.round(basePrice / sellingUnit.perFullUnit);
     return basePrice;
   };
 
@@ -234,17 +252,16 @@ const POSPage = () => {
     setSelectedProductIndex(-1);
   }, [filtered.length, search, selectedCategory]);
 
-  const addToCart = useCallback((product: Product, qty: number = 1, byPiece: boolean = false) => {
+  const addToCart = useCallback((product: Product, qty: number = 1, unit: { name: string; perFullUnit: number } | null = null) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id && i.sellingByPiece === byPiece);
-      const maxQty = byPiece ? product.stock * (product.pieces_per_unit || 1) : product.stock;
-      // Also account for existing cart items of the OTHER selling mode
-      const otherItem = prev.find((i) => i.product.id === product.id && i.sellingByPiece !== byPiece);
-      const otherStockUsed = otherItem
-        ? (otherItem.sellingByPiece ? otherItem.quantity / (product.pieces_per_unit || 1) : otherItem.quantity)
-        : 0;
+      const unitKey = unit ? unit.name : '__full__';
+      const existing = prev.find((i) => i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') === unitKey);
+      const maxQty = unit ? product.stock * unit.perFullUnit : product.stock;
+      // Account for other selling modes of same product
+      const otherItems = prev.filter((i) => i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') !== unitKey);
+      const otherStockUsed = otherItems.reduce((sum, oi) => sum + (oi.sellingUnit ? oi.quantity / oi.sellingUnit.perFullUnit : oi.quantity), 0);
       const availableStock = product.stock - otherStockUsed;
-      const availableQty = byPiece ? availableStock * (product.pieces_per_unit || 1) : availableStock;
+      const availableQty = unit ? availableStock * unit.perFullUnit : availableStock;
 
       if (existing) {
         const newQty = existing.quantity + qty;
@@ -252,13 +269,13 @@ const POSPage = () => {
           toast.error("Not enough stock");
           return prev;
         }
-        return prev.map((i) => (i.product.id === product.id && i.sellingByPiece === byPiece) ? { ...i, quantity: newQty } : i);
+        return prev.map((i) => (i.product.id === product.id && (i.sellingUnit?.name ?? '__full__') === unitKey) ? { ...i, quantity: newQty } : i);
       }
       if (qty > availableQty) {
         toast.error("Not enough stock");
         return prev;
       }
-      return [...prev, { product, quantity: qty, customPrice: null, sellingByPiece: byPiece }];
+      return [...prev, { product, quantity: qty, customPrice: null, sellingUnit: unit }];
     });
   }, []);
 
@@ -280,13 +297,13 @@ const POSPage = () => {
     barcodeRef.current?.focus();
   };
 
-  const updateQty = (productId: string, delta: number, byPiece?: boolean) => {
+  const updateQty = (productId: string, delta: number, unitName?: string) => {
     setCart((prev) => prev.map((i) => {
       if (i.product.id !== productId) return i;
-      if (byPiece !== undefined && i.sellingByPiece !== byPiece) return i;
+      if (unitName !== undefined && (i.sellingUnit?.name ?? '__full__') !== unitName) return i;
       const newQty = i.quantity + delta;
       if (newQty <= 0) return i;
-      const maxQty = i.sellingByPiece ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
+      const maxQty = i.sellingUnit ? i.product.stock * i.sellingUnit.perFullUnit : i.product.stock;
       if (newQty > maxQty) { toast.error("Not enough stock"); return i; }
       return { ...i, quantity: newQty };
     }));
@@ -296,7 +313,7 @@ const POSPage = () => {
     setCart((prev) => prev.map((i) => {
       if (i.product.id !== productId) return i;
       if (qty <= 0) return i;
-      const maxQty = i.sellingByPiece ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
+      const maxQty = i.sellingUnit ? i.product.stock * i.sellingUnit.perFullUnit : i.product.stock;
       if (qty > maxQty) { toast.error("Not enough stock"); return i; }
       return { ...i, quantity: qty };
     }));
@@ -312,7 +329,7 @@ const POSPage = () => {
     ));
   };
 
-  const total = cart.reduce((s, i) => s + getEffectivePrice(i.product, i.customPrice, i.sellingByPiece) * i.quantity, 0);
+  const total = cart.reduce((s, i) => s + getEffectivePrice(i.product, i.customPrice, i.sellingUnit) * i.quantity, 0);
   const creditToApply = Math.min(
     Math.max(0, parseFloat(applyCreditAmount) || 0),
     selectedCreditBalance ?? 0,
@@ -416,8 +433,8 @@ const POSPage = () => {
           const targetId = lastAddedIdRef.current || cart[cart.length - 1].product.id;
           const targetItem = cart.find(i => i.product.id === targetId);
           if (targetItem) {
-            const cartKey = `${targetId}-${targetItem.sellingByPiece ? 'pc' : 'pk'}`;
-            const effectivePrice = getEffectivePrice(targetItem.product, targetItem.customPrice, targetItem.sellingByPiece);
+            const cartKey = `${targetId}-${targetItem.sellingUnit ? targetItem.sellingUnit.name : 'pk'}`;
+            const effectivePrice = getEffectivePrice(targetItem.product, targetItem.customPrice, targetItem.sellingUnit);
             setEditingPriceId(cartKey);
             setTempPrice(String(effectivePrice));
             toast.info(`Set custom price for ${targetItem.product.name}`);
@@ -469,15 +486,17 @@ const POSPage = () => {
           return;
         }
 
-        // P - Add selected product by piece
+        // P - Add selected product by smallest sub-unit from unit_description
         if (e.key === "p" || e.key === "P") {
           if (selectedProductIndex >= 0 && selectedProductIndex < filtered.length) {
             const p = filtered[selectedProductIndex];
-            if (p.pieces_per_unit > 1) {
+            const breakdown = parseUnitBreakdown(p.unit_description);
+            if (breakdown.length > 0) {
               e.preventDefault();
-              addToCart(p, 1, true);
+              const smallest = breakdown[breakdown.length - 1];
+              addToCart(p, 1, smallest);
               lastAddedIdRef.current = p.id;
-              toast.success(`Added 1 piece of ${p.name}`);
+              toast.success(`Added 1 ${smallest.name} of ${p.name}`);
               setSelectedProductIndex(-1);
             }
           }
@@ -581,7 +600,7 @@ const POSPage = () => {
       if (prod) {
         const qty = Math.min(item.quantity, prod.stock);
         if (qty > 0) {
-          setCart(prev => [...prev, { product: prod, quantity: qty, customPrice: null, sellingByPiece: false }]);
+          setCart(prev => [...prev, { product: prod, quantity: qty, customPrice: null, sellingUnit: null }]);
         }
       }
     }
@@ -646,7 +665,7 @@ const POSPage = () => {
       // FEFO batch deduction - aggregate stock usage per product
       const stockDeductions: Record<string, number> = {};
       for (const i of cart) {
-        const stockUsed = i.sellingByPiece ? i.quantity / (i.product.pieces_per_unit || 1) : i.quantity;
+        const stockUsed = i.sellingUnit ? i.quantity / i.sellingUnit.perFullUnit : i.quantity;
         stockDeductions[i.product.id] = (stockDeductions[i.product.id] || 0) + stockUsed;
       }
 
@@ -832,9 +851,9 @@ const POSPage = () => {
     const payLabel = payMethod === "cash" ? "Cash" : payMethod === "credit" ? "Credit (On Account)" : "Mobile Money";
     const whatsappMsg = encodeURIComponent(
       `Hi ${customerName}, here's your receipt from ${settings.businessName}:\n\nOrder: #${orderId.slice(0, 8)}\nDate: ${new Date(`${saleDate}T${saleTime}:00`).toLocaleString()}\n${customerType === "wholesale" ? "Type: Wholesale\n" : ""}\nItems:\n${items.map(i => {
-        const price = getEffectivePrice(i.product, i.customPrice, i.sellingByPiece);
-        const qtyLabel = i.sellingByPiece ? `${i.quantity} pcs` : `×${i.quantity}`;
-        return `• ${i.product.name} ${qtyLabel} — UGX ${(price * i.quantity).toLocaleString()}${i.customPrice !== null ? " (negotiated)" : ""}${i.sellingByPiece ? " (partial)" : ""}`;
+        const price = getEffectivePrice(i.product, i.customPrice, i.sellingUnit);
+        const qtyLabel = i.sellingUnit ? `${i.quantity} ${i.sellingUnit.name}s` : `×${i.quantity}`;
+        return `• ${i.product.name} ${qtyLabel} — UGX ${(price * i.quantity).toLocaleString()}${i.customPrice !== null ? " (negotiated)" : ""}${i.sellingUnit ? " (partial)" : ""}`;
       }).join("\n")}\n\nTotal: UGX ${total.toLocaleString()}${creditLine}${balanceLine}\nPayment: ${payLabel}\n\n${settings.footerNote}`
     );
     const whatsappUrl = `https://wa.me/${customerPhone}?text=${whatsappMsg}`;
@@ -931,11 +950,11 @@ const POSPage = () => {
         </div>
         <div class="items-header"><span style="flex:1">Item</span><span style="width:45px;text-align:center">Qty</span><span style="width:90px;text-align:right">Amount</span></div>
         ${items.map(i => {
-          const price = getEffectivePrice(i.product, i.customPrice, i.sellingByPiece);
+          const price = getEffectivePrice(i.product, i.customPrice, i.sellingUnit);
           const hasCustom = i.customPrice !== null || (customerType === "wholesale" && i.product.wholesale_price > 0);
-          const qtyLabel = i.sellingByPiece ? `${i.quantity} pcs` : String(i.quantity);
-          const pieceNote = i.sellingByPiece ? `<br/><span class="item-note">Sold by piece @ UGX ${price.toLocaleString()}/pc</span>` : "";
-          return `<div class="item-row"><span class="item-name">${i.product.name}${pieceNote}${hasCustom ? `<br/><span class="item-note">${i.customPrice !== null ? "Negotiated price" : "Wholesale price"}: UGX ${price.toLocaleString()}/${i.sellingByPiece ? "pc" : "unit"}</span>` : ""}</span><span class="item-qty">${qtyLabel}</span><span class="item-price">UGX ${(price * i.quantity).toLocaleString()}</span></div>`;
+          const qtyLabel = i.sellingUnit ? `${i.quantity} ${i.sellingUnit.name}s` : String(i.quantity);
+          const pieceNote = i.sellingUnit ? `<br/><span class="item-note">Sold by ${i.sellingUnit.name} @ UGX ${price.toLocaleString()}/${i.sellingUnit.name}</span>` : "";
+          return `<div class="item-row"><span class="item-name">${i.product.name}${pieceNote}${hasCustom ? `<br/><span class="item-note">${i.customPrice !== null ? "Negotiated price" : "Wholesale price"}: UGX ${price.toLocaleString()}/${i.sellingUnit ? i.sellingUnit.name : "unit"}</span>` : ""}</span><span class="item-qty">${qtyLabel}</span><span class="item-price">UGX ${(price * i.quantity).toLocaleString()}</span></div>`;
         }).join("")}
         ${(() => {
           const rxItems = items.filter(i => i.product.requires_prescription && prescriptionRules[i.product.id]?.length > 0);
@@ -1070,7 +1089,7 @@ const POSPage = () => {
                   <p className="font-medium text-sm truncate">{p.name}</p>
                   {p.product_code && <p className="text-[10px] text-muted-foreground font-mono">{p.product_code}</p>}
                   {p.unit_description && <p className="text-[10px] text-accent-foreground/70 italic">{p.unit_description}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">{p.stock} {p.unit} left{p.pieces_per_unit > 1 && ` (${p.stock * p.pieces_per_unit} pcs)`}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{p.stock} {p.unit} left{(() => { const bd = parseUnitBreakdown(p.unit_description); return bd.length > 0 ? ` (${bd.map(b => `${p.stock * b.perFullUnit} ${b.name}s`).join(', ')})` : p.pieces_per_unit > 1 ? ` (${p.stock * p.pieces_per_unit} pcs)` : ''; })()}</p>
                   {p.expiry_date && (
                     <p className={`text-[10px] mt-0.5 ${(() => {
                       const days = Math.ceil((new Date(p.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -1104,27 +1123,56 @@ const POSPage = () => {
                           </>
                         );
                       })()}
-                      {p.pieces_per_unit > 1 && (
-                        <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>
-                      )}
+                      {(() => {
+                        const breakdown = parseUnitBreakdown(p.unit_description);
+                        if (breakdown.length > 0) {
+                          const basePrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
+                          return breakdown.map(bu => (
+                            <span key={bu.name} className="block text-[10px] text-muted-foreground">
+                              Per {bu.name}: UGX {Math.round(basePrice / bu.perFullUnit).toLocaleString()}
+                            </span>
+                          ));
+                        }
+                        if (p.pieces_per_unit > 1) {
+                          return <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>;
+                        }
+                        return null;
+                      })()}
                     </div>
                     {p.requires_prescription && <Badge variant="destructive" className="text-[10px]">Rx</Badge>}
                   </div>
-                  <div className="mt-2 flex gap-1">
+                  <div className="mt-2 flex gap-1 flex-wrap">
                     <button
                       onClick={() => addToCart(p)}
                       className="flex-1 bg-primary text-primary-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity"
                     >
                       <Plus className="h-3 w-3 inline mr-0.5" /> {p.unit}
                     </button>
-                    {p.pieces_per_unit > 1 && (
-                      <button
-                        onClick={() => addToCart(p, 1, true)}
-                        className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
-                      >
-                        <Pill className="h-3 w-3 inline mr-0.5" /> 1 Piece
-                      </button>
-                    )}
+                    {(() => {
+                      const breakdown = parseUnitBreakdown(p.unit_description);
+                      if (breakdown.length > 0) {
+                        return breakdown.map(bu => (
+                          <button
+                            key={bu.name}
+                            onClick={() => addToCart(p, 1, bu)}
+                            className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border min-w-[60px]"
+                          >
+                            <Pill className="h-3 w-3 inline mr-0.5" /> {bu.name}
+                          </button>
+                        ));
+                      }
+                      if (p.pieces_per_unit > 1) {
+                        return (
+                          <button
+                            onClick={() => addToCart(p, 1, { name: "piece", perFullUnit: p.pieces_per_unit })}
+                            className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
+                          >
+                            <Pill className="h-3 w-3 inline mr-0.5" /> piece
+                          </button>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               ))}
@@ -1161,15 +1209,15 @@ const POSPage = () => {
           {cart.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">Cart is empty<br/><span className="text-[10px]">Search & click products to add</span></p>
           ) : cart.map((item) => {
-            const effectivePrice = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
-            const maxQty = item.sellingByPiece ? item.product.stock * (item.product.pieces_per_unit || 1) : item.product.stock;
-            const cartKey = `${item.product.id}-${item.sellingByPiece ? 'pc' : 'pk'}`;
+            const effectivePrice = getEffectivePrice(item.product, item.customPrice, item.sellingUnit);
+            const maxQty = item.sellingUnit ? item.product.stock * item.sellingUnit.perFullUnit : item.product.stock;
+            const cartKey = `${item.product.id}-${item.sellingUnit ? item.sellingUnit.name : 'pk'}`;
             return (
               <div key={cartKey} className="bg-muted/50 rounded-lg p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-2">
                     <p className="text-sm font-medium">{item.product.name}</p>
-                    {item.sellingByPiece && (
+                    {item.sellingUnit && (
                       <Badge variant="outline" className="text-[9px] mt-0.5 border-primary/50 text-primary">
                         <Pill className="h-2.5 w-2.5 mr-0.5" /> Selling by piece
                       </Badge>
@@ -1188,8 +1236,8 @@ const POSPage = () => {
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  {item.sellingByPiece
-                    ? `${item.product.stock * (item.product.pieces_per_unit || 1)} pcs available`
+                  {item.sellingUnit
+                    ? `${item.product.stock * item.sellingUnit.perFullUnit} ${item.sellingUnit.name}s available`
                     : `${item.product.stock} ${item.product.unit} in stock`}
                 </p>
                 {editingPriceId === cartKey && (
@@ -1205,7 +1253,7 @@ const POSPage = () => {
                         }
                       }}
                       className="h-7 text-xs"
-                      placeholder={item.sellingByPiece ? "Price per piece" : "Custom price"}
+                      placeholder={item.sellingUnit ? "Price per piece" : "Custom price"}
                       autoFocus
                     />
                     <Button size="sm" className="h-7 text-xs px-2" onClick={() => {
@@ -1219,11 +1267,11 @@ const POSPage = () => {
                   </div>
                 )}
                 {item.customPrice !== null && editingPriceId !== cartKey && (
-                  <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</p>
+                  <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{item.sellingUnit ? item.sellingUnit.name : "unit"}</p>
                 )}
                 {(() => {
-                  const costPrice = item.sellingByPiece && item.product.pieces_per_unit > 1
-                    ? item.product.buying_price / item.product.pieces_per_unit
+                  const costPrice = item.sellingUnit
+                    ? item.product.buying_price / item.sellingUnit.perFullUnit
                     : item.product.buying_price;
                   const unitProfit = effectivePrice - costPrice;
                   const totalProfit = unitProfit * item.quantity;
@@ -1231,15 +1279,15 @@ const POSPage = () => {
                     <>
                       {item.product.buying_price > 0 && (
                         <div className="flex items-center justify-between text-[10px] mt-1">
-                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</span>
+                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{item.sellingUnit ? item.sellingUnit.name : "unit"}</span>
                           <span className={`font-semibold ${unitProfit > 0 ? 'text-emerald-600' : unitProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}
+                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{item.sellingUnit ? item.sellingUnit.name : "unit"}
                           </span>
                         </div>
                       )}
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                          <button onClick={() => updateQty(item.product.id, -1, item.sellingUnit?.name ?? '__full__')} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
                             <Minus className="h-3 w-3" />
                           </button>
                           {editingQtyId === cartKey ? (
@@ -1274,10 +1322,10 @@ const POSPage = () => {
                               className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
                               title="Click to type exact quantity"
                             >
-                              {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
+                              {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingUnit ? item.sellingUnit.name + "s" : item.product.unit}</span>
                             </button>
                           )}
-                          <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                          <button onClick={() => updateQty(item.product.id, 1, item.sellingUnit?.name ?? '__full__')} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
@@ -1301,9 +1349,9 @@ const POSPage = () => {
         <div className="p-4 border-t border-border space-y-3">
           {(() => {
             const totalProfit = cart.reduce((sum, item) => {
-              const ep = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
-              const cp = item.sellingByPiece && item.product.pieces_per_unit > 1
-                ? item.product.buying_price / item.product.pieces_per_unit
+              const ep = getEffectivePrice(item.product, item.customPrice, item.sellingUnit);
+              const cp = item.sellingUnit
+                ? item.product.buying_price / item.sellingUnit.perFullUnit
                 : item.product.buying_price;
               return sum + (ep - cp) * item.quantity;
             }, 0);
