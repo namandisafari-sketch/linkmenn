@@ -1094,19 +1094,19 @@ const POSPage = () => {
                     </div>
                     {p.requires_prescription && <Badge variant="destructive" className="text-[10px]">Rx</Badge>}
                   </div>
-                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity space-y-1">
+                  <div className="mt-2 flex gap-1">
                     <button
                       onClick={() => addToCart(p)}
-                      className="w-full bg-primary text-primary-foreground text-xs text-center py-1 rounded-md"
+                      className="flex-1 bg-primary text-primary-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity"
                     >
-                      <Plus className="h-3 w-3 inline" /> Add {p.unit}
+                      <Plus className="h-3 w-3 inline mr-0.5" /> {p.unit}
                     </button>
                     {p.pieces_per_unit > 1 && (
                       <button
                         onClick={() => addToCart(p, 1, true)}
-                        className="w-full bg-accent text-accent-foreground text-xs text-center py-1 rounded-md"
+                        className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
                       >
-                        <Pill className="h-3 w-3 inline" /> Sell by Piece
+                        <Pill className="h-3 w-3 inline mr-0.5" /> 1 Piece
                       </button>
                     )}
                   </div>
