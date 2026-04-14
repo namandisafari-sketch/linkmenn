@@ -25,7 +25,12 @@ const DEFAULT_RECEIPT = {
 const SettingsPage = () => {
   const [receipt, setReceipt] = useState(() => {
     const saved = localStorage.getItem("marvid_receipt_settings");
-    return saved ? { ...DEFAULT_RECEIPT, ...JSON.parse(saved) } : DEFAULT_RECEIPT;
+    if (saved) {
+      const parsed = { ...DEFAULT_RECEIPT, ...JSON.parse(saved) };
+      if (!parsed.logoUrl) parsed.logoUrl = DEFAULT_RECEIPT.logoUrl;
+      return parsed;
+    }
+    return DEFAULT_RECEIPT;
   });
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
