@@ -1089,7 +1089,7 @@ const POSPage = () => {
                   <p className="font-medium text-sm truncate">{p.name}</p>
                   {p.product_code && <p className="text-[10px] text-muted-foreground font-mono">{p.product_code}</p>}
                   {p.unit_description && <p className="text-[10px] text-accent-foreground/70 italic">{p.unit_description}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">{p.stock} {p.unit} left{p.pieces_per_unit > 1 && ` (${p.stock * p.pieces_per_unit} pcs)`}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{p.stock} {p.unit} left{(() => { const bd = parseUnitBreakdown(p.unit_description); return bd.length > 0 ? ` (${bd.map(b => `${p.stock * b.perFullUnit} ${b.name}s`).join(', ')})` : p.pieces_per_unit > 1 ? ` (${p.stock * p.pieces_per_unit} pcs)` : ''; })()}</p>
                   {p.expiry_date && (
                     <p className={`text-[10px] mt-0.5 ${(() => {
                       const days = Math.ceil((new Date(p.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
