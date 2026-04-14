@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package, Truck, Phone, MapPin, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableSelect from "./SearchableSelect";
@@ -10,7 +10,7 @@ import CsvImportDialog from "./CsvImportDialog";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
-interface Supplier { id: string; name: string; }
+interface Supplier { id: string; name: string; phone: string | null; address: string | null; contact_person: string | null; payment_terms: string | null; }
 interface Product { id: string; name: string; price: number; unit: string; buying_price: number | null; }
 interface LineItem {
   product_id: string; product_name: string; batch_number: string;
@@ -56,10 +56,10 @@ const StockPurchasePage = () => {
 
   const fetchData = async () => {
     const [{ data: s }, { data: p }] = await Promise.all([
-      supabase.from("suppliers").select("id, name").order("name"),
+      supabase.from("suppliers").select("id, name, phone, address, contact_person, payment_terms").order("name"),
       supabase.from("products").select("id, name, price, unit, buying_price").order("name"),
     ]);
-    setSuppliers(s || []);
+    setSuppliers((s || []) as Supplier[]);
     setProducts((p || []) as Product[]);
     setLoading(false);
   };
