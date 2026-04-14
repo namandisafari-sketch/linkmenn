@@ -14,8 +14,8 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Marvin Pharma Ltd" className="h-10" />
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="Marvin Pharma Ltd" className="h-14 w-auto p-0 m-0" />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

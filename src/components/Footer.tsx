@@ -13,8 +13,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div>
-            <img src={logo} alt="Marvin Pharma Ltd" className="h-10 brightness-0 invert mb-4" />
-            <p className="text-sm leading-relaxed opacity-70">Affordable quality, reliable access, healthier communities.</p>
+            <img src={logo} alt="Marvin Pharma Ltd" className="h-14 w-auto brightness-0 invert p-0 m-0" />
+            <p className="text-sm leading-relaxed opacity-70 mt-2">Affordable quality, reliable access, healthier communities.</p>
           </div>
 
           {/* Company links */}
