@@ -18,10 +18,39 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    const body = await req.json();
+    const action = body.action || "bootstrap";
+
+    if (action === "import-products") {
+      const { products } = body;
+      if (!products || !Array.isArray(products)) {
+        throw new Error("products array is required");
+      }
+
+      // Delete all existing products (order_items FK may block, so delete order_items first if needed)
+      await adminClient.from("order_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      const { error: delErr } = await adminClient.from("products").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      if (delErr) throw delErr;
+
+      // Insert in batches of 50
+      let inserted = 0;
+      for (let i = 0; i < products.length; i += 50) {
+        const batch = products.slice(i, i + 50);
+        const { error } = await adminClient.from("products").insert(batch);
+        if (error) throw error;
+        inserted += batch.length;
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, inserted }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Default: bootstrap admin
     const email = "admin@marvid.app";
     const password = "Marvid@2026";
 
-    // Check if user already exists
     const { data: existingUsers } = await adminClient.auth.admin.listUsers();
     const existing = existingUsers?.users?.find((u: any) => u.email === email);
 
@@ -29,7 +58,6 @@ Deno.serve(async (req) => {
 
     if (existing) {
       userId = existing.id;
-      // Reset password
       await adminClient.auth.admin.updateUserById(userId, {
         password,
         email_confirm: true,
@@ -44,7 +72,6 @@ Deno.serve(async (req) => {
       userId = newUser.user.id;
     }
 
-    // Ensure admin role exists
     const { data: roleCheck } = await adminClient
       .from("user_roles")
       .select("id")
