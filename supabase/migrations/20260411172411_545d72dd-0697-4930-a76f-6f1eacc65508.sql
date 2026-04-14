@@ -1,0 +1,2 @@
+ALTER TABLE public.orders DROP CONSTRAINT orders_payment_method_check;
+ALTER TABLE public.orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('cash', 'mobile_money', 'cash_on_delivery', 'credit'));
