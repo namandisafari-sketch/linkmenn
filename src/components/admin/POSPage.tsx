@@ -300,10 +300,10 @@ const POSPage = () => {
   const updateQty = (productId: string, delta: number, byPiece?: boolean) => {
     setCart((prev) => prev.map((i) => {
       if (i.product.id !== productId) return i;
-      if (byPiece !== undefined && i.sellingByPiece !== byPiece) return i;
+      if (byPiece !== undefined && !!i.sellingUnit !== byPiece) return i;
       const newQty = i.quantity + delta;
       if (newQty <= 0) return i;
-      const maxQty = i.sellingByPiece ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
+      const maxQty = !!i.sellingUnit ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
       if (newQty > maxQty) { toast.error("Not enough stock"); return i; }
       return { ...i, quantity: newQty };
     }));
@@ -313,7 +313,7 @@ const POSPage = () => {
     setCart((prev) => prev.map((i) => {
       if (i.product.id !== productId) return i;
       if (qty <= 0) return i;
-      const maxQty = i.sellingByPiece ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
+      const maxQty = !!i.sellingUnit ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
       if (qty > maxQty) { toast.error("Not enough stock"); return i; }
       return { ...i, quantity: qty };
     }));
@@ -329,7 +329,7 @@ const POSPage = () => {
     ));
   };
 
-  const total = cart.reduce((s, i) => s + getEffectivePrice(i.product, i.customPrice, i.sellingByPiece) * i.quantity, 0);
+  const total = cart.reduce((s, i) => s + getEffectivePrice(i.product, i.customPrice, !!i.sellingUnit) * i.quantity, 0);
   const creditToApply = Math.min(
     Math.max(0, parseFloat(applyCreditAmount) || 0),
     selectedCreditBalance ?? 0,
@@ -433,8 +433,8 @@ const POSPage = () => {
           const targetId = lastAddedIdRef.current || cart[cart.length - 1].product.id;
           const targetItem = cart.find(i => i.product.id === targetId);
           if (targetItem) {
-            const cartKey = `${targetId}-${targetItem.sellingByPiece ? 'pc' : 'pk'}`;
-            const effectivePrice = getEffectivePrice(targetItem.product, targetItem.customPrice, targetItem.sellingByPiece);
+            const cartKey = `${targetId}-${!!targetItem.sellingUnit ? 'pc' : 'pk'}`;
+            const effectivePrice = getEffectivePrice(targetItem.product, targetItem.customPrice, !!targetItem.sellingUnit);
             setEditingPriceId(cartKey);
             setTempPrice(String(effectivePrice));
             toast.info(`Set custom price for ${targetItem.product.name}`);
@@ -663,7 +663,7 @@ const POSPage = () => {
       // FEFO batch deduction - aggregate stock usage per product
       const stockDeductions: Record<string, number> = {};
       for (const i of cart) {
-        const stockUsed = i.sellingByPiece ? i.quantity / (i.product.pieces_per_unit || 1) : i.quantity;
+        const stockUsed = !!i.sellingUnit ? i.quantity / (i.product.pieces_per_unit || 1) : i.quantity;
         stockDeductions[i.product.id] = (stockDeductions[i.product.id] || 0) + stockUsed;
       }
 
@@ -849,9 +849,9 @@ const POSPage = () => {
     const payLabel = payMethod === "cash" ? "Cash" : payMethod === "credit" ? "Credit (On Account)" : "Mobile Money";
     const whatsappMsg = encodeURIComponent(
       `Hi ${customerName}, here's your receipt from ${settings.businessName}:\n\nOrder: #${orderId.slice(0, 8)}\nDate: ${new Date(`${saleDate}T${saleTime}:00`).toLocaleString()}\n${customerType === "wholesale" ? "Type: Wholesale\n" : ""}\nItems:\n${items.map(i => {
-        const price = getEffectivePrice(i.product, i.customPrice, i.sellingByPiece);
-        const qtyLabel = i.sellingByPiece ? `${i.quantity} pcs` : `×${i.quantity}`;
-        return `• ${i.product.name} ${qtyLabel} — UGX ${(price * i.quantity).toLocaleString()}${i.customPrice !== null ? " (negotiated)" : ""}${i.sellingByPiece ? " (partial)" : ""}`;
+        const price = getEffectivePrice(i.product, i.customPrice, !!i.sellingUnit);
+        const qtyLabel = !!i.sellingUnit ? `${i.quantity} pcs` : `×${i.quantity}`;
+        return `• ${i.product.name} ${qtyLabel} — UGX ${(price * i.quantity).toLocaleString()}${i.customPrice !== null ? " (negotiated)" : ""}${!!i.sellingUnit ? " (partial)" : ""}`;
       }).join("\n")}\n\nTotal: UGX ${total.toLocaleString()}${creditLine}${balanceLine}\nPayment: ${payLabel}\n\n${settings.footerNote}`
     );
     const whatsappUrl = `https://wa.me/${customerPhone}?text=${whatsappMsg}`;
@@ -948,11 +948,11 @@ const POSPage = () => {
         </div>
         <div class="items-header"><span style="flex:1">Item</span><span style="width:45px;text-align:center">Qty</span><span style="width:90px;text-align:right">Amount</span></div>
         ${items.map(i => {
-          const price = getEffectivePrice(i.product, i.customPrice, i.sellingByPiece);
+          const price = getEffectivePrice(i.product, i.customPrice, !!i.sellingUnit);
           const hasCustom = i.customPrice !== null || (customerType === "wholesale" && i.product.wholesale_price > 0);
-          const qtyLabel = i.sellingByPiece ? `${i.quantity} pcs` : String(i.quantity);
-          const pieceNote = i.sellingByPiece ? `<br/><span class="item-note">Sold by piece @ UGX ${price.toLocaleString()}/pc</span>` : "";
-          return `<div class="item-row"><span class="item-name">${i.product.name}${pieceNote}${hasCustom ? `<br/><span class="item-note">${i.customPrice !== null ? "Negotiated price" : "Wholesale price"}: UGX ${price.toLocaleString()}/${i.sellingByPiece ? "pc" : "unit"}</span>` : ""}</span><span class="item-qty">${qtyLabel}</span><span class="item-price">UGX ${(price * i.quantity).toLocaleString()}</span></div>`;
+          const qtyLabel = !!i.sellingUnit ? `${i.quantity} pcs` : String(i.quantity);
+          const pieceNote = !!i.sellingUnit ? `<br/><span class="item-note">Sold by piece @ UGX ${price.toLocaleString()}/pc</span>` : "";
+          return `<div class="item-row"><span class="item-name">${i.product.name}${pieceNote}${hasCustom ? `<br/><span class="item-note">${i.customPrice !== null ? "Negotiated price" : "Wholesale price"}: UGX ${price.toLocaleString()}/${!!i.sellingUnit ? "pc" : "unit"}</span>` : ""}</span><span class="item-qty">${qtyLabel}</span><span class="item-price">UGX ${(price * i.quantity).toLocaleString()}</span></div>`;
         }).join("")}
         ${(() => {
           const rxItems = items.filter(i => i.product.requires_prescription && prescriptionRules[i.product.id]?.length > 0);
@@ -1178,15 +1178,15 @@ const POSPage = () => {
           {cart.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">Cart is empty<br/><span className="text-[10px]">Search & click products to add</span></p>
           ) : cart.map((item) => {
-            const effectivePrice = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
-            const maxQty = item.sellingByPiece ? item.product.stock * (item.product.pieces_per_unit || 1) : item.product.stock;
-            const cartKey = `${item.product.id}-${item.sellingByPiece ? 'pc' : 'pk'}`;
+            const effectivePrice = getEffectivePrice(item.product, item.customPrice, !!item.sellingUnit);
+            const maxQty = !!item.sellingUnit ? item.product.stock * (item.product.pieces_per_unit || 1) : item.product.stock;
+            const cartKey = `${item.product.id}-${!!item.sellingUnit ? 'pc' : 'pk'}`;
             return (
               <div key={cartKey} className="bg-muted/50 rounded-lg p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-2">
                     <p className="text-sm font-medium">{item.product.name}</p>
-                    {item.sellingByPiece && (
+                    {!!item.sellingUnit && (
                       <Badge variant="outline" className="text-[9px] mt-0.5 border-primary/50 text-primary">
                         <Pill className="h-2.5 w-2.5 mr-0.5" /> Selling by piece
                       </Badge>
@@ -1205,7 +1205,7 @@ const POSPage = () => {
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  {item.sellingByPiece
+                  {!!item.sellingUnit
                     ? `${item.product.stock * (item.product.pieces_per_unit || 1)} pcs available`
                     : `${item.product.stock} ${item.product.unit} in stock`}
                 </p>
@@ -1222,7 +1222,7 @@ const POSPage = () => {
                         }
                       }}
                       className="h-7 text-xs"
-                      placeholder={item.sellingByPiece ? "Price per piece" : "Custom price"}
+                      placeholder={!!item.sellingUnit ? "Price per piece" : "Custom price"}
                       autoFocus
                     />
                     <Button size="sm" className="h-7 text-xs px-2" onClick={() => {
@@ -1236,10 +1236,10 @@ const POSPage = () => {
                   </div>
                 )}
                 {item.customPrice !== null && editingPriceId !== cartKey && (
-                  <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</p>
+                  <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{!!item.sellingUnit ? "pc" : "unit"}</p>
                 )}
                 {(() => {
-                  const costPrice = item.sellingByPiece && item.product.pieces_per_unit > 1
+                  const costPrice = !!item.sellingUnit && item.product.pieces_per_unit > 1
                     ? item.product.buying_price / item.product.pieces_per_unit
                     : item.product.buying_price;
                   const unitProfit = effectivePrice - costPrice;
@@ -1248,15 +1248,15 @@ const POSPage = () => {
                     <>
                       {item.product.buying_price > 0 && (
                         <div className="flex items-center justify-between text-[10px] mt-1">
-                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</span>
+                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{!!item.sellingUnit ? "pc" : "unit"}</span>
                           <span className={`font-semibold ${unitProfit > 0 ? 'text-emerald-600' : unitProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}
+                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{!!item.sellingUnit ? "pc" : "unit"}
                           </span>
                         </div>
                       )}
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                          <button onClick={() => updateQty(item.product.id, -1, !!item.sellingUnit)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
                             <Minus className="h-3 w-3" />
                           </button>
                           {editingQtyId === cartKey ? (
@@ -1291,10 +1291,10 @@ const POSPage = () => {
                               className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
                               title="Click to type exact quantity"
                             >
-                              {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
+                              {item.quantity} <span className="text-[9px] text-muted-foreground">{!!item.sellingUnit ? "pcs" : item.product.unit}</span>
                             </button>
                           )}
-                          <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                          <button onClick={() => updateQty(item.product.id, 1, !!item.sellingUnit)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
@@ -1318,8 +1318,8 @@ const POSPage = () => {
         <div className="p-4 border-t border-border space-y-3">
           {(() => {
             const totalProfit = cart.reduce((sum, item) => {
-              const ep = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
-              const cp = item.sellingByPiece && item.product.pieces_per_unit > 1
+              const ep = getEffectivePrice(item.product, item.customPrice, !!item.sellingUnit);
+              const cp = !!item.sellingUnit && item.product.pieces_per_unit > 1
                 ? item.product.buying_price / item.product.pieces_per_unit
                 : item.product.buying_price;
               return sum + (ep - cp) * item.quantity;
