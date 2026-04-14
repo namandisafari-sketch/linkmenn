@@ -110,6 +110,7 @@ const InventoryPage = () => {
       unit: p.unit,
       pieces_per_unit: (p as any).pieces_per_unit || 1,
       unit_description: (p as any).unit_description || "",
+      unit_prices: (p as any).unit_prices || {},
       stock: p.stock,
       batch_number: p.batch_number || "",
       expiry_date: p.expiry_date || "",
