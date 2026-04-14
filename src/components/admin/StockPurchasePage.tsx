@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package, Truck, Phone, MapPin, FileText } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, ShoppingCart, Upload, History, Printer, ChevronDown, ChevronUp, Search, Keyboard, Package, Truck, Phone, MapPin, FileText, AlertTriangle, Edit2, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableSelect from "./SearchableSelect";
 import CsvImportDialog from "./CsvImportDialog";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Supplier { id: string; name: string; phone: string | null; address: string | null; contact_person: string | null; payment_terms: string | null; }
 interface Product { id: string; name: string; price: number; unit: string; buying_price: number | null; }
@@ -28,6 +30,31 @@ const EMPTY_LINE: LineItem = {
   mfg_date: "", expiry_date: "", quantity: 1,
   purchase_price: 0, selling_price: 0,
 };
+
+const INVOICE_STATUSES = [
+  { value: "unpaid", label: "Unpaid", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
+  { value: "paid", label: "Paid", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
+  { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" },
+  { value: "taken_back", label: "Taken Back", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
+  { value: "issue_raised", label: "Issue Raised", color: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" },
+];
+
+function numberToWords(num: number): string {
+  if (num === 0) return "Zero";
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+  function convert(n: number): string {
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");
+    if (n < 1000) return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " and " + convert(n % 100) : "");
+    if (n < 1000000) return convert(Math.floor(n / 1000)) + " Thousand" + (n % 1000 ? " " + convert(n % 1000) : "");
+    if (n < 1000000000) return convert(Math.floor(n / 1000000)) + " Million" + (n % 1000000 ? " " + convert(n % 1000000) : "");
+    return convert(Math.floor(n / 1000000000)) + " Billion" + (n % 1000000000 ? " " + convert(n % 1000000000) : "");
+  }
+  return convert(Math.round(num)) + " Shillings Only";
+}
 
 const StockPurchasePage = () => {
   const { user } = useAuth();
@@ -52,6 +79,15 @@ const StockPurchasePage = () => {
   const [expandedPurchase, setExpandedPurchase] = useState<string | null>(null);
   const [purchaseItems, setPurchaseItems] = useState<Record<string, any[]>>({});
 
+  // Invoice editing
+  const [editingInvoice, setEditingInvoice] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ status: "", amount_paid: 0, due_date: "", notes: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Overdue notifications
+  const [overdueInvoices, setOverdueInvoices] = useState<any[]>([]);
+  const [showOverduePanel, setShowOverduePanel] = useState(false);
+
   const invoiceRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
@@ -64,52 +100,40 @@ const StockPurchasePage = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  const fetchOverdueInvoices = async () => {
+    const { data } = await supabase
+      .from("purchase_invoices")
+      .select("*")
+      .in("status", ["unpaid", "issue_raised"])
+      .order("created_at", { ascending: false });
+    const overdue = (data || []).filter((inv: any) => {
+      if (inv.due_date && differenceInDays(new Date(), new Date(inv.due_date)) > 0) return true;
+      if (!inv.due_date && differenceInDays(new Date(), new Date(inv.invoice_date)) > 30) return true;
+      return false;
+    });
+    setOverdueInvoices(overdue);
+  };
+
+  useEffect(() => { fetchData(); fetchOverdueInvoices(); }, []);
 
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        // Enter in inputs → move to next input
         if (e.key === "Enter") {
           e.preventDefault();
           const inputs = document.querySelectorAll<HTMLInputElement>(".purchase-form input, .purchase-form textarea, .purchase-form select, .purchase-form button[role='combobox']");
           const arr = Array.from(inputs);
           const idx = arr.indexOf(e.target as HTMLInputElement);
-          if (idx >= 0 && idx < arr.length - 1) {
-            arr[idx + 1]?.focus();
-          }
+          if (idx >= 0 && idx < arr.length - 1) arr[idx + 1]?.focus();
         }
         return;
       }
-
-      // Alt+N → New line item
-      if (e.altKey && e.key === "n") {
-        e.preventDefault();
-        addLine();
-        toast.info("New item added (Alt+N)");
-      }
-      // Alt+S → Save purchase
-      if (e.altKey && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      }
-      // Alt+H → Toggle history
-      if (e.altKey && e.key === "h") {
-        e.preventDefault();
-        setShowHistory(prev => !prev);
-      }
-      // Alt+I → Import CSV
-      if (e.altKey && e.key === "i") {
-        e.preventDefault();
-        setImportOpen(true);
-      }
-      // Alt+R → Reset form
-      if (e.altKey && e.key === "r") {
-        e.preventDefault();
-        resetForm();
-        toast.info("Form cleared (Alt+R)");
-      }
+      if (e.altKey && e.key === "n") { e.preventDefault(); addLine(); toast.info("New item added (Alt+N)"); }
+      if (e.altKey && e.key === "s") { e.preventDefault(); handleSave(); }
+      if (e.altKey && e.key === "h") { e.preventDefault(); setShowHistory(prev => !prev); }
+      if (e.altKey && e.key === "i") { e.preventDefault(); setImportOpen(true); }
+      if (e.altKey && e.key === "r") { e.preventDefault(); resetForm(); toast.info("Form cleared (Alt+R)"); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -146,6 +170,48 @@ const StockPurchasePage = () => {
     }));
   };
 
+  const getStatusBadge = (status: string) => {
+    const s = INVOICE_STATUSES.find(st => st.value === status);
+    return s ? <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${s.color}`}>{s.label}</span> : <Badge variant="secondary" className="text-[10px]">{status}</Badge>;
+  };
+
+  const openEditInvoice = (invoice: any) => {
+    setEditingInvoice(invoice);
+    setEditForm({
+      status: invoice.status || "unpaid",
+      amount_paid: Number(invoice.amount_paid) || 0,
+      due_date: invoice.due_date ? new Date(invoice.due_date).toISOString().split("T")[0] : "",
+      notes: invoice.narration || "",
+    });
+  };
+
+  const saveInvoiceEdit = async () => {
+    if (!editingInvoice) return;
+    setEditSaving(true);
+    try {
+      const amountDue = Math.max(0, Number(editingInvoice.total_amount) - editForm.amount_paid);
+      await supabase.from("purchase_invoices").update({
+        status: editForm.status,
+        amount_paid: editForm.amount_paid,
+        amount_due: amountDue,
+        due_date: editForm.due_date || null,
+      }).eq("id", editingInvoice.id);
+
+      // Refresh the expanded purchase items
+      if (editingInvoice.voucher_id) {
+        setPurchaseItems(prev => { const n = { ...prev }; delete n[editingInvoice.voucher_id]; return n; });
+        await loadPurchaseItems(editingInvoice.voucher_id);
+      }
+      toast.success("Invoice updated successfully");
+      setEditingInvoice(null);
+      fetchOverdueInvoices();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   const printPurchaseReceipt = (purchase: PurchaseRecord) => {
     const settingsRaw = localStorage.getItem("marvid_receipt_settings");
     const settings = settingsRaw ? JSON.parse(settingsRaw) : {
@@ -156,6 +222,9 @@ const StockPurchasePage = () => {
     const items = purchaseItems[purchase.id] || [];
     const invoice = items.find((i: any) => i.type === "invoice");
     const purchasedItems = items.filter((i: any) => i.type === "item");
+    const totalAmt = Number(purchase.total_amount);
+    const amountInWords = numberToWords(totalAmt);
+
     const itemsTableHtml = purchasedItems.length > 0 ? `
       <div style="margin:12px 0;">
         <p style="font-weight:800;font-size:12px;margin-bottom:6px;">Items Purchased</p>
@@ -178,6 +247,7 @@ const StockPurchasePage = () => {
           </tbody>
         </table>
       </div>` : "";
+
     const receiptHtml = `<html><head><title>Purchase Receipt</title>
       <style>
         @page { size: ${settings.paperWidth} auto; margin: 4mm; }
@@ -191,9 +261,11 @@ const StockPurchasePage = () => {
         .meta-row { display: flex; justify-content: space-between; padding: 2px 0; }
         .meta-label { color: #666; font-weight: 600; }
         .meta-value { font-weight: 800; }
-        .total { background: #1F617A; color: white; border-radius: 6px; padding: 10px 12px; margin: 12px 0; display: flex; justify-content: space-between; }
+        .total { background: #1F617A; color: white; border-radius: 6px; padding: 10px 12px; margin: 12px 0; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; }
         .total-label { font-size: 13px; font-weight: 800; }
         .total-value { font-size: 18px; font-weight: 900; }
+        .amount-words { font-size: 10px; font-style: italic; opacity: 0.9; margin-top: 4px; }
         .footer { text-align: center; margin-top: 16px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 10px; color: #999; }
         @media print { .no-print { display: none !important; } }
       </style></head><body>
@@ -211,7 +283,10 @@ const StockPurchasePage = () => {
           ${invoice ? `<div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value">${(invoice as any).status?.toUpperCase()}</span></div>` : ""}
         </div>
         ${itemsTableHtml}
-        <div class="total"><span class="total-label">TOTAL AMOUNT</span><span class="total-value">UGX ${Number(purchase.total_amount).toLocaleString()}</span></div>
+        <div class="total">
+          <div class="total-row"><span class="total-label">TOTAL AMOUNT</span><span class="total-value">UGX ${totalAmt.toLocaleString()}</span></div>
+          <div class="amount-words">${amountInWords}</div>
+        </div>
         <div class="footer">
           <p>Printed on ${new Date().toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
           <p style="margin-top:4px;">Powered by TennaHub Technologies Limited</p>
@@ -295,7 +370,6 @@ const StockPurchasePage = () => {
         total_amount: totalAmount, amount_paid: 0, amount_due: totalAmount, status: "unpaid",
       } as any);
 
-      // Create purchase order linked to supplier
       const { data: po } = await supabase.from("purchase_orders").insert({
         supplier_id: supplierId,
         total_amount: totalAmount,
@@ -303,7 +377,6 @@ const StockPurchasePage = () => {
         status: "received",
       } as any).select().single();
 
-      // Create purchase order items linked to products
       if (po) {
         const poItems = lines.map(line => ({
           purchase_order_id: (po as any).id,
@@ -314,7 +387,6 @@ const StockPurchasePage = () => {
         await supabase.from("purchase_order_items").insert(poItems as any);
       }
 
-      // Save voucher items (for receipt display)
       const voucherItems = lines.map(line => ({
         voucher_id: (voucher as any).id,
         product_id: line.product_id,
@@ -343,6 +415,7 @@ const StockPurchasePage = () => {
       toast.success(`Purchase saved — ${voucherNumber}`);
       resetForm();
       if (showHistory) fetchHistory();
+      fetchOverdueInvoices();
     } catch (err: any) {
       toast.error(err.message || "Failed to save");
     } finally {
@@ -360,6 +433,65 @@ const StockPurchasePage = () => {
 
   return (
     <div className="space-y-4 purchase-form">
+      {/* Overdue Notification Banner */}
+      {overdueInvoices.length > 0 && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div>
+              <p className="font-semibold text-sm text-destructive">
+                {overdueInvoices.length} Overdue Invoice{overdueInvoices.length > 1 ? "s" : ""}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Total overdue: UGX {overdueInvoices.reduce((s, inv) => s + Number(inv.amount_due), 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setShowOverduePanel(!showOverduePanel)} className="gap-1.5 text-destructive border-destructive/30">
+            {showOverduePanel ? "Hide" : "View"} Details
+            {showOverduePanel ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      )}
+
+      {/* Overdue Details Panel */}
+      {showOverduePanel && overdueInvoices.length > 0 && (
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-destructive/5">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" /> Overdue Invoices
+            </h3>
+          </div>
+          <div className="divide-y divide-border">
+            {overdueInvoices.map((inv: any) => {
+              const daysOverdue = inv.due_date
+                ? differenceInDays(new Date(), new Date(inv.due_date))
+                : differenceInDays(new Date(), new Date(inv.invoice_date)) - 30;
+              return (
+                <div key={inv.id} className="px-4 py-3 flex items-center justify-between text-sm">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{inv.supplier_name}</span>
+                      {getStatusBadge(inv.status)}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Invoice #{inv.invoice_number || "N/A"} · {format(new Date(inv.invoice_date), "dd MMM yyyy")}
+                      <span className="text-destructive font-bold ml-2">({daysOverdue} days overdue)</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-destructive">UGX {Number(inv.amount_due).toLocaleString()}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditInvoice(inv)} title="Edit invoice">
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Header with tabs and shortcuts hint */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-2">
@@ -431,7 +563,7 @@ const StockPurchasePage = () => {
             </div>
           </div>
 
-          {/* Supplier Info Card - shows when supplier selected */}
+          {/* Supplier Info Card */}
           {supplierId && (() => {
             const sup = suppliers.find(s => s.id === supplierId);
             if (!sup) return null;
@@ -549,6 +681,13 @@ const StockPurchasePage = () => {
                     <td className="px-2 py-3 text-right text-sm text-primary">UGX {totalAmount.toLocaleString()}</td>
                     <td colSpan={2} className="px-2 py-3"></td>
                   </tr>
+                  {totalAmount > 0 && (
+                    <tr className="bg-muted/20">
+                      <td colSpan={9} className="px-4 py-2 text-xs italic text-muted-foreground">
+                        Amount in words: <span className="font-semibold text-foreground">{numberToWords(totalAmount)}</span>
+                      </td>
+                    </tr>
+                  )}
                 </tfoot>
               </table>
             </div>
@@ -645,19 +784,34 @@ const StockPurchasePage = () => {
                           <div className="flex items-center justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
                         ) : (
                           <div className="space-y-3">
-                            {items.filter((i: any) => i.type === "invoice").map((inv: any) => (
-                              <div key={inv.id} className="bg-muted/30 rounded-lg p-3 text-xs space-y-1">
-                                <p className="font-semibold text-sm">Invoice Details</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div><span className="text-muted-foreground">Invoice #:</span> <span className="font-medium">{inv.invoice_number || "N/A"}</span></div>
-                                  <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(inv.invoice_date), "dd MMM yyyy")}</span></div>
-                                  <div><span className="text-muted-foreground">Total:</span> <span className="font-medium">UGX {Number(inv.total_amount).toLocaleString()}</span></div>
-                                  <div><span className="text-muted-foreground">Paid:</span> <span className="font-medium">UGX {Number(inv.amount_paid).toLocaleString()}</span></div>
-                                  <div><span className="text-muted-foreground">Due:</span> <span className="font-bold text-destructive">UGX {Number(inv.amount_due).toLocaleString()}</span></div>
-                                  <div><span className="text-muted-foreground">Status:</span> <Badge variant={inv.status === "paid" ? "default" : "destructive"} className="text-[10px]">{inv.status}</Badge></div>
+                            {items.filter((i: any) => i.type === "invoice").map((inv: any) => {
+                              const isOverdue = inv.status !== "paid" && inv.status !== "rejected" && inv.status !== "taken_back" && (
+                                (inv.due_date && differenceInDays(new Date(), new Date(inv.due_date)) > 0) ||
+                                (!inv.due_date && differenceInDays(new Date(), new Date(inv.invoice_date)) > 30)
+                              );
+                              return (
+                                <div key={inv.id} className={`rounded-lg p-3 text-xs space-y-1 ${isOverdue ? "bg-destructive/10 border border-destructive/20" : "bg-muted/30"}`}>
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-semibold text-sm flex items-center gap-2">
+                                      Invoice Details
+                                      {isOverdue && <span className="text-destructive text-[10px] font-bold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> OVERDUE</span>}
+                                    </p>
+                                    <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => openEditInvoice(inv)}>
+                                      <Edit2 className="h-3 w-3" /> Edit
+                                    </Button>
+                                  </div>
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    <div><span className="text-muted-foreground">Invoice #:</span> <span className="font-medium">{inv.invoice_number || "N/A"}</span></div>
+                                    <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(inv.invoice_date), "dd MMM yyyy")}</span></div>
+                                    <div><span className="text-muted-foreground">Due Date:</span> <span className="font-medium">{inv.due_date ? format(new Date(inv.due_date), "dd MMM yyyy") : "Not set"}</span></div>
+                                    <div><span className="text-muted-foreground">Total:</span> <span className="font-medium">UGX {Number(inv.total_amount).toLocaleString()}</span></div>
+                                    <div><span className="text-muted-foreground">Paid:</span> <span className="font-medium">UGX {Number(inv.amount_paid).toLocaleString()}</span></div>
+                                    <div><span className="text-muted-foreground">Due:</span> <span className="font-bold text-destructive">UGX {Number(inv.amount_due).toLocaleString()}</span></div>
+                                    <div><span className="text-muted-foreground">Status:</span> {getStatusBadge(inv.status)}</div>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                             {items.filter((i: any) => i.type === "item").length > 0 && (
                               <div>
                                 <p className="text-xs font-semibold mb-2">Items Purchased</p>
@@ -726,6 +880,62 @@ const StockPurchasePage = () => {
           )}
         </div>
       )}
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={!!editingInvoice} onOpenChange={(open) => !open && setEditingInvoice(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit2 className="h-4 w-4" /> Edit Invoice
+            </DialogTitle>
+          </DialogHeader>
+          {editingInvoice && (
+            <div className="space-y-4">
+              <div className="bg-muted/30 rounded-lg p-3 text-xs space-y-1">
+                <div><span className="text-muted-foreground">Supplier:</span> <span className="font-bold">{editingInvoice.supplier_name}</span></div>
+                <div><span className="text-muted-foreground">Invoice #:</span> <span className="font-bold">{editingInvoice.invoice_number || "N/A"}</span></div>
+                <div><span className="text-muted-foreground">Total:</span> <span className="font-bold">UGX {Number(editingInvoice.total_amount).toLocaleString()}</span></div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1 block">Status</label>
+                <Select value={editForm.status} onValueChange={v => setEditForm(prev => ({ ...prev, status: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INVOICE_STATUSES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1 block">Amount Paid (UGX)</label>
+                <Input type="number" min={0} value={editForm.amount_paid}
+                  onChange={e => setEditForm(prev => ({ ...prev, amount_paid: Number(e.target.value) }))} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Remaining: UGX {Math.max(0, Number(editingInvoice.total_amount) - editForm.amount_paid).toLocaleString()}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1 block">Due Date</label>
+                <Input type="date" value={editForm.due_date}
+                  onChange={e => setEditForm(prev => ({ ...prev, due_date: e.target.value }))} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingInvoice(null)}>Cancel</Button>
+            <Button onClick={saveInvoiceEdit} disabled={editSaving} className="gap-2">
+              {editSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
