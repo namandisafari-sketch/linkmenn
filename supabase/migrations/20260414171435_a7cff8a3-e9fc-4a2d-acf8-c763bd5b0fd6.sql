@@ -1,0 +1,1 @@
+UPDATE purchase_invoices SET amount_due = total_amount WHERE voucher_id = '5e61c802-b5e5-4e84-9779-58f63917eb26' AND amount_paid = 0;

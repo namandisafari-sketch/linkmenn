@@ -292,7 +292,7 @@ const StockPurchasePage = () => {
       await supabase.from("purchase_invoices").insert({
         voucher_id: (voucher as any).id, supplier_name: supplierName,
         invoice_number: invoiceNumber, invoice_date: invoiceDate,
-        total_amount: totalAmount, amount_paid: 0, status: "unpaid",
+        total_amount: totalAmount, amount_paid: 0, amount_due: totalAmount, status: "unpaid",
       } as any);
 
       // Create purchase order linked to supplier
