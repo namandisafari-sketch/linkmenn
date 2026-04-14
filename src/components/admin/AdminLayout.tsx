@@ -27,7 +27,6 @@ const navItems = [
   { label: "Accounting", icon: BookOpen, path: "/admin/accounting" },
   { label: "Financial Statements", icon: BarChart3, path: "/admin/balance-sheet" },
   
-  { label: "Purchase History", icon: FileArchive, path: "/admin/purchase-history" },
   { label: "Prescription Rules", icon: Pill, path: "/admin/prescriptions" },
   { label: "Customer Accounts", icon: Users, path: "/admin/credits" },
   { label: "Customer Analytics", icon: BarChart3, path: "/admin/analytics" },

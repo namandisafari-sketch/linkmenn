@@ -291,7 +291,6 @@ const AdminDashboard = () => {
     if (path === "/admin/accounting") return <AccountingPage />;
     
     if (path === "/admin/suppliers") return <SupplierManagementPage />;
-    if (path === "/admin/purchase-history") return <PurchaseHistoryPage />;
     if (path === "/admin/day-book") return <DayBookPage />;
     if (path === "/admin/balance-sheet") return <BalanceSheetPage />;
     if (path === "/admin/settings") return <SettingsPage />;
@@ -314,7 +313,6 @@ const AdminDashboard = () => {
     if (path === "/admin/accounting") return "Accounting";
     
     if (path === "/admin/suppliers") return "Supplier Management";
-    if (path === "/admin/purchase-history") return "Purchase History";
     if (path === "/admin/day-book") return "Day Book";
     if (path === "/admin/balance-sheet") return "Financial Statements";
     if (path === "/admin/settings") return "Settings";
