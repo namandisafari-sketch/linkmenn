@@ -279,7 +279,6 @@ const AdminDashboard = () => {
     if (path === "/admin/pos") return <POSPage />;
     if (path === "/admin/inventory") return <InventoryPage />;
     if (path === "/admin/stock-purchase") return <StockPurchasePage />;
-    if (path === "/admin/stock-update") return <StockUpdatePage />;
     if (path === "/admin/batches") return <BatchManagementPage />;
     if (path === "/admin/orders") return <OrdersPage />;
     if (path === "/admin/reports") return <SalesReportPage />;
@@ -301,7 +300,6 @@ const AdminDashboard = () => {
     if (path === "/admin/pos") return "Point of Sale";
     if (path === "/admin/inventory") return "Inventory";
     if (path === "/admin/stock-purchase") return "Stock Purchase";
-    if (path === "/admin/stock-update") return "Stock Update / Adjustments";
     if (path === "/admin/batches") return "Batch Tracking (FEFO)";
     if (path === "/admin/orders") return "Orders";
     if (path === "/admin/reports") return "Sales Report";
