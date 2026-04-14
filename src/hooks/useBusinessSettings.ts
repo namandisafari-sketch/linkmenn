@@ -20,7 +20,12 @@ export type BusinessSettings = typeof DEFAULT_SETTINGS;
 export const useBusinessSettings = () => {
   const [settings, setSettings] = useState<BusinessSettings>(() => {
     const saved = localStorage.getItem("marvid_receipt_settings");
-    return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    if (saved) {
+      const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      if (!parsed.logoUrl) parsed.logoUrl = DEFAULT_SETTINGS.logoUrl;
+      return parsed;
+    }
+    return DEFAULT_SETTINGS;
   });
 
   useEffect(() => {
