@@ -1133,11 +1133,14 @@ const POSPage = () => {
                         const breakdown = parseUnitBreakdown(p.unit_description);
                         if (breakdown.length > 0) {
                           const basePrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
-                          return breakdown.map(bu => (
-                            <span key={bu.name} className="block text-[10px] text-muted-foreground">
-                              Per {bu.name}: UGX {Math.round(basePrice / bu.perFullUnit).toLocaleString()}
-                            </span>
-                          ));
+                          return breakdown.map(bu => {
+                            const subPrice = (p.unit_prices && p.unit_prices[bu.name] > 0) ? p.unit_prices[bu.name] : Math.round(basePrice / bu.perFullUnit);
+                            return (
+                              <span key={bu.name} className="block text-[10px] text-muted-foreground">
+                                Per {bu.name}: <strong>UGX {subPrice.toLocaleString()}</strong>
+                              </span>
+                            );
+                          });
                         }
                         if (p.pieces_per_unit > 1) {
                           return <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>;
