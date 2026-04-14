@@ -1,4 +1,4 @@
-import researchImg from "@/assets/research-lab.jpg";
+import researchImg from "@/assets/research-image.avif";
 import { Users, ShieldCheck, Lightbulb } from "lucide-react";
 
 const ResearchSection = () => (
