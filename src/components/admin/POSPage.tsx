@@ -19,6 +19,7 @@ interface Product {
   unit: string;
   pieces_per_unit: number;
   unit_description: string | null;
+  unit_prices: Record<string, number> | null;
   requires_prescription: boolean;
   category_id: string | null;
   product_code: string | null;
@@ -173,7 +174,7 @@ const POSPage = () => {
     const fetch = async () => {
       setLoading(true);
       const [{ data: prods }, { data: cats }] = await Promise.all([
-        supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
+        supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
         supabase.from("categories").select("*").order("name"),
       ]);
       setProducts((prods as Product[]) || []);
@@ -236,6 +237,11 @@ const POSPage = () => {
   const getEffectivePrice = (product: Product, customPrice: number | null, sellingUnit: { name: string; perFullUnit: number } | null = null) => {
     if (customPrice !== null) return customPrice;
     const basePrice = customerType === "wholesale" && product.wholesale_price > 0 ? product.wholesale_price : product.price;
+    // Use stored sub-unit price if available
+    if (sellingUnit && product.unit_prices && product.unit_prices[sellingUnit.name] > 0) {
+      return product.unit_prices[sellingUnit.name];
+    }
+    // Fallback: auto-calculate from full unit price
     if (sellingUnit) return Math.round(basePrice / sellingUnit.perFullUnit);
     return basePrice;
   };
@@ -651,13 +657,18 @@ const POSPage = () => {
 
       if (orderErr) throw orderErr;
 
-      const items = cart.map((i) => ({
-        order_id: order.id,
-        product_id: i.product.id,
-        quantity: i.quantity,
-        unit_price: i.product.price,
-        custom_unit_price: i.customPrice !== null ? i.customPrice : (customerType === "wholesale" && i.product.wholesale_price > 0 ? i.product.wholesale_price : null),
-      }));
+      const items = cart.map((i) => {
+        const effectivePrice = getEffectivePrice(i.product, i.customPrice, i.sellingUnit);
+        return {
+          order_id: order.id,
+          product_id: i.product.id,
+          quantity: i.quantity,
+          unit_price: effectivePrice,
+          custom_unit_price: i.customPrice !== null ? i.customPrice : (
+            i.sellingUnit ? effectivePrice : (customerType === "wholesale" && i.product.wholesale_price > 0 ? i.product.wholesale_price : null)
+          ),
+        };
+      });
 
       const { error: itemsErr } = await supabase.from("order_items").insert(items as any);
       if (itemsErr) throw itemsErr;
@@ -821,7 +832,7 @@ const POSPage = () => {
       setSaleDate(new Date().toISOString().split("T")[0]);
       setSaleTime(`${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`);
 
-      const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
+      const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
       setProducts((prods as Product[]) || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to create order");
@@ -1127,11 +1138,14 @@ const POSPage = () => {
                         const breakdown = parseUnitBreakdown(p.unit_description);
                         if (breakdown.length > 0) {
                           const basePrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
-                          return breakdown.map(bu => (
-                            <span key={bu.name} className="block text-[10px] text-muted-foreground">
-                              Per {bu.name}: UGX {Math.round(basePrice / bu.perFullUnit).toLocaleString()}
-                            </span>
-                          ));
+                          return breakdown.map(bu => {
+                            const subPrice = (p.unit_prices && p.unit_prices[bu.name] > 0) ? p.unit_prices[bu.name] : Math.round(basePrice / bu.perFullUnit);
+                            return (
+                              <span key={bu.name} className="block text-[10px] text-muted-foreground">
+                                Per {bu.name}: <strong>UGX {subPrice.toLocaleString()}</strong>
+                              </span>
+                            );
+                          });
                         }
                         if (p.pieces_per_unit > 1) {
                           return <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>;
