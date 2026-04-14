@@ -3,8 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Package, ShoppingBag, FileText, LogOut, Settings,
   Menu, ShoppingCart, Users, Eye, BarChart3, History, Pill,
-  BookOpen, AlertTriangle, Layers, Truck, PackagePlus, ClipboardList,
-  Wifi, WifiOff
+  BookOpen, AlertTriangle, Layers, Truck, PackagePlus,
+  Wifi, WifiOff, Maximize, Minimize
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,6 @@ const navItems = [
   { label: "POS / Sales", icon: ShoppingCart, path: "/admin/pos" },
   { label: "Inventory", icon: Package, path: "/admin/inventory" },
   { label: "Stock Purchase", icon: PackagePlus, path: "/admin/stock-purchase" },
-  { label: "Stock Update", icon: ClipboardList, path: "/admin/stock-update" },
   { label: "Batch Tracking", icon: Layers, path: "/admin/batches" },
   { label: "Product Preview", icon: Eye, path: "/admin/preview" },
   { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
