@@ -469,6 +469,21 @@ const POSPage = () => {
           return;
         }
 
+        // P - Add selected product by piece
+        if (e.key === "p" || e.key === "P") {
+          if (selectedProductIndex >= 0 && selectedProductIndex < filtered.length) {
+            const p = filtered[selectedProductIndex];
+            if (p.pieces_per_unit > 1) {
+              e.preventDefault();
+              addToCart(p, 1, true);
+              lastAddedIdRef.current = p.id;
+              toast.success(`Added 1 piece of ${p.name}`);
+              setSelectedProductIndex(-1);
+            }
+          }
+          return;
+        }
+
         // Number keys (0-9) - Type quantity for last added cart item
         if (e.key >= "0" && e.key <= "9" && cart.length > 0) {
           e.preventDefault();
@@ -978,6 +993,7 @@ const POSPage = () => {
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Tab</kbd> Navigate</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Enter</kbd> Add/Checkout</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">0-9</kbd> Set Qty</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">P</kbd> Add by Piece</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F4</kbd> Wholesale</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F5</kbd> Reprint</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Alt+Space</kbd> Past Receipts</span>
@@ -1094,19 +1110,19 @@ const POSPage = () => {
                     </div>
                     {p.requires_prescription && <Badge variant="destructive" className="text-[10px]">Rx</Badge>}
                   </div>
-                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity space-y-1">
+                  <div className="mt-2 flex gap-1">
                     <button
                       onClick={() => addToCart(p)}
-                      className="w-full bg-primary text-primary-foreground text-xs text-center py-1 rounded-md"
+                      className="flex-1 bg-primary text-primary-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity"
                     >
-                      <Plus className="h-3 w-3 inline" /> Add {p.unit}
+                      <Plus className="h-3 w-3 inline mr-0.5" /> {p.unit}
                     </button>
                     {p.pieces_per_unit > 1 && (
                       <button
                         onClick={() => addToCart(p, 1, true)}
-                        className="w-full bg-accent text-accent-foreground text-xs text-center py-1 rounded-md"
+                        className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
                       >
-                        <Pill className="h-3 w-3 inline" /> Sell by Piece
+                        <Pill className="h-3 w-3 inline mr-0.5" /> 1 Piece
                       </button>
                     )}
                   </div>
