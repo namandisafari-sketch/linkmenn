@@ -131,13 +131,17 @@ const StockPurchasePage = () => {
 
   const loadPurchaseItems = async (voucherId: string) => {
     if (purchaseItems[voucherId]) return;
-    const { data: invoice } = await supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle();
-    const { data: ledger } = await supabase.from("general_ledger").select("*").eq("voucher_id", voucherId);
+    const [invoiceRes, ledgerRes, voucherItemsRes] = await Promise.all([
+      supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle(),
+      supabase.from("general_ledger").select("*").eq("voucher_id", voucherId),
+      supabase.from("voucher_items").select("*, products(name, unit)").eq("voucher_id", voucherId),
+    ]);
     setPurchaseItems(prev => ({
       ...prev,
       [voucherId]: [
-        ...(invoice ? [{ type: "invoice", ...invoice }] : []),
-        ...(ledger || []).map((l: any) => ({ type: "ledger", ...l })),
+        ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
+        ...(ledgerRes.data || []).map((l: any) => ({ type: "ledger", ...l })),
+        ...(voucherItemsRes.data || []).map((v: any) => ({ type: "item", ...v })),
       ],
     }));
   };
