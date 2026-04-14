@@ -571,12 +571,9 @@ const InventoryPage = () => {
               </div>
             </div>
             {form.buying_price > 0 && form.price > 0 && (
-              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 flex gap-4">
+              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 flex gap-4 flex-wrap">
                 <span>💰 Margin: <strong>UGX {(form.price - form.buying_price).toLocaleString()}</strong></span>
                 <span>📊 Markup: <strong>{((form.price - form.buying_price) / form.buying_price * 100).toFixed(1)}%</strong></span>
-                {form.pieces_per_unit > 1 && (
-                  <span>💊 Unit Price: <strong>UGX {Math.round(form.price / form.pieces_per_unit).toLocaleString()}/pc</strong></span>
-                )}
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
