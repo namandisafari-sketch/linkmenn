@@ -352,7 +352,15 @@ const InventoryPage = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className={`h-2 w-2 rounded-full ${sl.color}`} />
-                    <span className="text-xs text-muted-foreground">{p.stock} {p.unit}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {p.stock} {p.unit}
+                      {(() => {
+                        const bd = parseUnitBreakdown((p as any).unit_description);
+                        if (bd.length > 0) return ` (${bd.map(b => `${p.stock * b.perFullUnit} ${b.name}s`).join(', ')})`;
+                        if ((p as any).pieces_per_unit > 1) return ` (${p.stock * (p as any).pieces_per_unit} pcs)`;
+                        return '';
+                      })()}
+                    </span>
                   </div>
                 </div>
                 {(p as any).unit_description && (
