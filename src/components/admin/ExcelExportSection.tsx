@@ -54,14 +54,15 @@ const ExcelExportSection = () => {
       suppliers: "suppliers", invoices: "purchase_invoices",
     };
 
-    let query = supabase.from(tableMap[key]).select("*");
+    const table = tableMap[key] as any;
+    let query = supabase.from(table).select("*");
     if (dateField && dateFrom) query = query.gte(dateField, dateFrom);
     if (dateField && dateTo) query = query.lte(dateField, dateTo + "T23:59:59");
     query = query.order(dateField || "created_at", { ascending: false });
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data as any[]) || [];
   };
 
   const handleExport = async () => {
