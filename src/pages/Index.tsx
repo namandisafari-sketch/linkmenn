@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import CategoryGrid from "@/components/CategoryGrid";
-import FeaturedProducts from "@/components/FeaturedProducts";
-import PrescriptionUpload from "@/components/PrescriptionUpload";
+import VisionValues from "@/components/VisionValues";
+import ResearchSection from "@/components/ResearchSection";
+import CSRSection from "@/components/CSRSection";
+import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import ChatBubble from "@/components/ChatBubble";
 
@@ -35,8 +37,10 @@ const Index = () => {
       <main className="flex-1">
         <HeroSection />
         <CategoryGrid />
-        <FeaturedProducts />
-        <PrescriptionUpload />
+        <VisionValues />
+        <ResearchSection />
+        <CSRSection />
+        <ContactSection />
       </main>
       <Footer />
       <ChatBubble />

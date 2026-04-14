@@ -1,71 +1,67 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Pill, Heart, Leaf, Baby, Syringe, ShieldPlus, Stethoscope, Droplets } from "lucide-react";
+import { Pill, FlaskConical, Heart, Cross } from "lucide-react";
 
-const iconMap: Record<string, any> = {
-  Antibiotics: ShieldPlus,
-  Painkillers: Pill,
-  Supplements: Leaf,
-  "Heart Health": Heart,
-  "Baby Care": Baby,
-  Vaccines: Syringe,
-  "Pain & Inflammation": Pill,
-  Antimalarials: Droplets,
-};
+const categories = [
+  { icon: Pill, title: "Rx & OTC\nMedicines", desc: "Quality-assured therapeutics across key therapeutic areas." },
+  { icon: FlaskConical, title: "Diagnostics", desc: "Reliable diagnostics and health screening essentials." },
+  { icon: Heart, title: "Wellness\n& Nutrition", desc: "Supplements and wellness lines supporting healthier lives." },
+  { icon: Cross, title: "Hospital\nSupplies", desc: "Trusted devices and consumables for clinical settings." },
+];
 
-const CategoryGrid = () => {
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories-home"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name")
-        .limit(8);
-      if (error) throw error;
-      // Get product counts per category
-      const { data: products } = await supabase
-        .from("products")
-        .select("category_id")
-        .eq("is_active", true);
-      const counts: Record<string, number> = {};
-      products?.forEach((p) => {
-        if (p.category_id) counts[p.category_id] = (counts[p.category_id] || 0) + 1;
-      });
-      return data.map((c) => ({ ...c, count: counts[c.id] || 0 }));
-    },
-  });
+const CategoryGrid = () => (
+  <section id="about" className="py-16 md:py-24 bg-background">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="grid md:grid-cols-2 gap-12 items-start">
+        {/* Left: About text */}
+        <div>
+          <span className="inline-block text-xs font-semibold text-muted-foreground border border-border rounded-full px-4 py-1.5 mb-4">
+            About Us
+          </span>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight mb-6">
+            Excellence in Pharmaceutical Care. Local Commitment. Global Vision.
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Founded in 2017, Marvin Pharma Ltd is dedicated to advancing health and well-being through the provision of high-quality pharmaceutical solutions. Guided by a vision to be Uganda's leading pharmaceutical company, we combine scientific innovation with ethical business practices to create lasting impact in healthcare.
+          </p>
+          <p className="text-muted-foreground leading-relaxed mb-6">
+            Marvin Pharma Ltd was incorporated in 2017 under the leadership of our Managing Director, Mr Mohammed Yousuf Pasha, who has rich experience of 20 years in the pharmaceutical industry in Uganda.
+          </p>
 
-  if (categories.length === 0) return null;
-
-  return (
-    <section className="py-12 md:py-16">
-      <div className="container">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold mb-1">Shop by Category</h2>
-            <p className="text-muted-foreground">Browse our wide selection of pharmaceutical products</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categories.slice(0, 8).map((cat) => {
-            const Icon = iconMap[cat.name] || Stethoscope;
-            return (
-              <button
-                key={cat.id}
-                className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-border hover:border-primary hover:shadow-lg transition-all duration-200"
-              >
-                <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200">
-                  <Icon className="h-7 w-7" />
+          <div className="space-y-3 mb-6">
+            {[
+              "WHO-GMP aligned quality systems",
+              "Focused on malaria control and public health education",
+              "Wide regional distribution and last-mile delivery",
+              "Long-term partnerships with trusted global manufacturers",
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-[hsl(210,80%,93%)] flex items-center justify-center shrink-0">
+                  <svg className="h-3.5 w-3.5 text-[hsl(210,80%,45%)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
-                <span className="text-sm font-semibold">{cat.name}</span>
-                <span className="text-xs text-muted-foreground">{cat.count} items</span>
-              </button>
-            );
-          })}
+                <span className="text-sm text-muted-foreground">{item}</span>
+              </div>
+            ))}
+          </div>
+
+          <a href="#contact" className="text-sm font-semibold text-[hsl(140,60%,35%)] hover:underline inline-flex items-center gap-1">
+            Speak to our team →
+          </a>
+        </div>
+
+        {/* Right: Category cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {categories.map((cat) => (
+            <div key={cat.title} className="border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow bg-card">
+              <cat.icon className="h-8 w-8 text-[hsl(140,60%,35%)] mb-4" />
+              <h3 className="font-bold text-sm mb-2 whitespace-pre-line">{cat.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{cat.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
 export default CategoryGrid;
