@@ -19,6 +19,7 @@ interface Product {
   unit: string;
   pieces_per_unit: number;
   unit_description: string | null;
+  unit_prices: Record<string, number> | null;
   requires_prescription: boolean;
   category_id: string | null;
   product_code: string | null;
@@ -236,6 +237,11 @@ const POSPage = () => {
   const getEffectivePrice = (product: Product, customPrice: number | null, sellingUnit: { name: string; perFullUnit: number } | null = null) => {
     if (customPrice !== null) return customPrice;
     const basePrice = customerType === "wholesale" && product.wholesale_price > 0 ? product.wholesale_price : product.price;
+    // Use stored sub-unit price if available
+    if (sellingUnit && product.unit_prices && product.unit_prices[sellingUnit.name] > 0) {
+      return product.unit_prices[sellingUnit.name];
+    }
+    // Fallback: auto-calculate from full unit price
     if (sellingUnit) return Math.round(basePrice / sellingUnit.perFullUnit);
     return basePrice;
   };
