@@ -1271,7 +1271,7 @@ const POSPage = () => {
                 )}
                 {(() => {
                   const costPrice = item.sellingUnit
-                    ? item.product.buying_price / item.product.pieces_per_unit
+                    ? item.product.buying_price / item.sellingUnit.perFullUnit
                     : item.product.buying_price;
                   const unitProfit = effectivePrice - costPrice;
                   const totalProfit = unitProfit * item.quantity;
