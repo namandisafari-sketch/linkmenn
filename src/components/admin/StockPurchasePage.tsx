@@ -131,13 +131,17 @@ const StockPurchasePage = () => {
 
   const loadPurchaseItems = async (voucherId: string) => {
     if (purchaseItems[voucherId]) return;
-    const { data: invoice } = await supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle();
-    const { data: ledger } = await supabase.from("general_ledger").select("*").eq("voucher_id", voucherId);
+    const [invoiceRes, ledgerRes, voucherItemsRes] = await Promise.all([
+      supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle(),
+      supabase.from("general_ledger").select("*").eq("voucher_id", voucherId),
+      supabase.from("voucher_items").select("*, products(name, unit)").eq("voucher_id", voucherId),
+    ]);
     setPurchaseItems(prev => ({
       ...prev,
       [voucherId]: [
-        ...(invoice ? [{ type: "invoice", ...invoice }] : []),
-        ...(ledger || []).map((l: any) => ({ type: "ledger", ...l })),
+        ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
+        ...(ledgerRes.data || []).map((l: any) => ({ type: "ledger", ...l })),
+        ...(voucherItemsRes.data || []).map((v: any) => ({ type: "item", ...v })),
       ],
     }));
   };
@@ -151,6 +155,29 @@ const StockPurchasePage = () => {
     const invoiceNum = purchase.narration?.match(/Invoice:\s*([^\s.]+)/)?.[1] || purchase.voucher_number;
     const items = purchaseItems[purchase.id] || [];
     const invoice = items.find((i: any) => i.type === "invoice");
+    const purchasedItems = items.filter((i: any) => i.type === "item");
+    const itemsTableHtml = purchasedItems.length > 0 ? `
+      <div style="margin:12px 0;">
+        <p style="font-weight:800;font-size:12px;margin-bottom:6px;">Items Purchased</p>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="border-bottom:1px solid #ccc;">
+            <th style="text-align:left;padding:4px 2px;">#</th>
+            <th style="text-align:left;padding:4px 2px;">Product</th>
+            <th style="text-align:right;padding:4px 2px;">Qty</th>
+            <th style="text-align:right;padding:4px 2px;">Rate</th>
+            <th style="text-align:right;padding:4px 2px;">Amount</th>
+          </tr></thead>
+          <tbody>${purchasedItems.map((item: any, idx: number) => `
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:3px 2px;">${idx + 1}</td>
+              <td style="padding:3px 2px;">${item.products?.name || item.description || "—"}</td>
+              <td style="text-align:right;padding:3px 2px;">${item.quantity}</td>
+              <td style="text-align:right;padding:3px 2px;">UGX ${Number(item.rate).toLocaleString()}</td>
+              <td style="text-align:right;padding:3px 2px;font-weight:600;">UGX ${Number(item.amount).toLocaleString()}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>` : "";
     const receiptHtml = `<html><head><title>Purchase Receipt</title>
       <style>
         @page { size: ${settings.paperWidth} auto; margin: 4mm; }
@@ -183,6 +210,7 @@ const StockPurchasePage = () => {
           <div class="meta-row"><span class="meta-label">Date</span><span class="meta-value">${format(new Date(purchase.voucher_date), "dd MMM yyyy")}</span></div>
           ${invoice ? `<div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value">${(invoice as any).status?.toUpperCase()}</span></div>` : ""}
         </div>
+        ${itemsTableHtml}
         <div class="total"><span class="total-label">TOTAL AMOUNT</span><span class="total-value">UGX ${Number(purchase.total_amount).toLocaleString()}</span></div>
         <div class="footer">
           <p>Printed on ${new Date().toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
@@ -285,6 +313,17 @@ const StockPurchasePage = () => {
         }));
         await supabase.from("purchase_order_items").insert(poItems as any);
       }
+
+      // Save voucher items (for receipt display)
+      const voucherItems = lines.map(line => ({
+        voucher_id: (voucher as any).id,
+        product_id: line.product_id,
+        quantity: line.quantity,
+        rate: line.purchase_price,
+        amount: line.quantity * line.purchase_price,
+        description: line.batch_number,
+      }));
+      await supabase.from("voucher_items").insert(voucherItems as any);
 
       for (const line of lines) {
         await supabase.from("product_batches").insert({
@@ -621,6 +660,37 @@ const StockPurchasePage = () => {
                                 </div>
                               </div>
                             ))}
+                            {items.filter((i: any) => i.type === "item").length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold mb-2">Items Purchased</p>
+                                <table className="w-full text-xs">
+                                  <thead><tr className="text-muted-foreground border-b border-border">
+                                    <th className="text-left py-1.5 font-medium">#</th>
+                                    <th className="text-left py-1.5 font-medium">Product</th>
+                                    <th className="text-right py-1.5 font-medium">Qty</th>
+                                    <th className="text-right py-1.5 font-medium">Rate</th>
+                                    <th className="text-right py-1.5 font-medium">Amount</th>
+                                  </tr></thead>
+                                  <tbody>
+                                    {items.filter((i: any) => i.type === "item").map((item: any, idx: number) => (
+                                      <tr key={item.id} className="border-b border-border">
+                                        <td className="py-1.5 text-muted-foreground">{idx + 1}</td>
+                                        <td className="py-1.5 font-medium">{item.products?.name || item.description || "Unknown"}</td>
+                                        <td className="text-right py-1.5">{item.quantity} {item.products?.unit || ""}</td>
+                                        <td className="text-right py-1.5">UGX {Number(item.rate).toLocaleString()}</td>
+                                        <td className="text-right py-1.5 font-semibold">UGX {Number(item.amount).toLocaleString()}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot>
+                                    <tr className="font-bold">
+                                      <td colSpan={4} className="text-right py-1.5">Total</td>
+                                      <td className="text-right py-1.5">UGX {items.filter((i: any) => i.type === "item").reduce((s: number, i: any) => s + Number(i.amount), 0).toLocaleString()}</td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
+                            )}
                             {items.filter((i: any) => i.type === "ledger").length > 0 && (
                               <div>
                                 <p className="text-xs font-semibold mb-2">Ledger Entries</p>
