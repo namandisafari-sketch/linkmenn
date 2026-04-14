@@ -22,27 +22,56 @@ Deno.serve(async (req) => {
     const action = body.action || "bootstrap";
 
     if (action === "import-products") {
-      const { products } = body;
+      const { categories, products } = body;
+      
       if (!products || !Array.isArray(products)) {
         throw new Error("products array is required");
       }
 
-      // Delete all existing products (order_items FK may block, so delete order_items first if needed)
+      // Clear existing data
       await adminClient.from("order_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-      const { error: delErr } = await adminClient.from("products").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-      if (delErr) throw delErr;
+      await adminClient.from("products").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await adminClient.from("categories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
-      // Insert in batches of 50
+      // Insert categories
+      const categoryMap: Record<string, string> = {};
+      if (categories && Array.isArray(categories)) {
+        for (const catName of categories) {
+          const { data, error } = await adminClient.from("categories").insert({ name: catName }).select("id").single();
+          if (error) {
+            console.error(`Category insert error for ${catName}:`, error);
+            continue;
+          }
+          categoryMap[catName] = data.id;
+        }
+      }
+
+      // Insert products in batches of 50
       let inserted = 0;
+      let skipped = 0;
       for (let i = 0; i < products.length; i += 50) {
-        const batch = products.slice(i, i + 50);
+        const batch = products.slice(i, i + 50).map((p: any) => ({
+          name: p.name,
+          category_id: categoryMap[p.category] || null,
+          stock: p.stock || 0,
+          unit: p.unit || "Piece",
+          buying_price: p.buying_price || 0,
+          price: p.price || 0,
+          expiry_date: p.expiry_date || null,
+          batch_number: p.batch_number || null,
+          is_active: p.is_active !== false,
+        }));
         const { error } = await adminClient.from("products").insert(batch);
-        if (error) throw error;
-        inserted += batch.length;
+        if (error) {
+          console.error(`Batch ${i} error:`, error);
+          skipped += batch.length;
+        } else {
+          inserted += batch.length;
+        }
       }
 
       return new Response(
-        JSON.stringify({ success: true, inserted }),
+        JSON.stringify({ success: true, inserted, skipped, categories: Object.keys(categoryMap).length }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -87,7 +116,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: "Admin account ready" }),
+      JSON.stringify({ success: true, message: "Admin account ready", userId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
