@@ -1123,27 +1123,56 @@ const POSPage = () => {
                           </>
                         );
                       })()}
-                      {p.pieces_per_unit > 1 && (
-                        <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>
-                      )}
+                      {(() => {
+                        const breakdown = parseUnitBreakdown(p.unit_description);
+                        if (breakdown.length > 0) {
+                          const basePrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
+                          return breakdown.map(bu => (
+                            <span key={bu.name} className="block text-[10px] text-muted-foreground">
+                              Per {bu.name}: UGX {Math.round(basePrice / bu.perFullUnit).toLocaleString()}
+                            </span>
+                          ));
+                        }
+                        if (p.pieces_per_unit > 1) {
+                          return <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>;
+                        }
+                        return null;
+                      })()}
                     </div>
                     {p.requires_prescription && <Badge variant="destructive" className="text-[10px]">Rx</Badge>}
                   </div>
-                  <div className="mt-2 flex gap-1">
+                  <div className="mt-2 flex gap-1 flex-wrap">
                     <button
                       onClick={() => addToCart(p)}
                       className="flex-1 bg-primary text-primary-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity"
                     >
                       <Plus className="h-3 w-3 inline mr-0.5" /> {p.unit}
                     </button>
-                    {p.pieces_per_unit > 1 && (
-                      <button
-                        onClick={() => addToCart(p, 1, true)}
-                        className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
-                      >
-                        <Pill className="h-3 w-3 inline mr-0.5" /> 1 Piece
-                      </button>
-                    )}
+                    {(() => {
+                      const breakdown = parseUnitBreakdown(p.unit_description);
+                      if (breakdown.length > 0) {
+                        return breakdown.map(bu => (
+                          <button
+                            key={bu.name}
+                            onClick={() => addToCart(p, 1, bu)}
+                            className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border min-w-[60px]"
+                          >
+                            <Pill className="h-3 w-3 inline mr-0.5" /> {bu.name}
+                          </button>
+                        ));
+                      }
+                      if (p.pieces_per_unit > 1) {
+                        return (
+                          <button
+                            onClick={() => addToCart(p, 1, { name: "piece", perFullUnit: p.pieces_per_unit })}
+                            className="flex-1 bg-accent text-accent-foreground text-xs text-center py-1.5 rounded-md hover:opacity-90 transition-opacity border border-border"
+                          >
+                            <Pill className="h-3 w-3 inline mr-0.5" /> piece
+                          </button>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               ))}
