@@ -29,8 +29,26 @@ interface CartItem {
   product: Product;
   quantity: number;
   customPrice: number | null;
-  sellingByPiece: boolean;
+  sellingUnit: { name: string; perFullUnit: number } | null;
 }
+
+// Parse unit_description like "1 pack =3strip=30tabs" into sub-unit options
+const parseUnitBreakdown = (unitDescription: string | null): { name: string; perFullUnit: number }[] => {
+  if (!unitDescription) return [];
+  // Split by = and parse each segment: "1 pack", "3strip", "30tabs"
+  const segments = unitDescription.split("=").map(s => s.trim()).filter(Boolean);
+  if (segments.length <= 1) return [];
+  const results: { name: string; perFullUnit: number }[] = [];
+  for (let i = 1; i < segments.length; i++) {
+    const match = segments[i].match(/^(\d+)\s*(.+)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const name = match[2].trim().replace(/s$/, ''); // normalize plural
+      if (count > 0) results.push({ name, perFullUnit: count });
+    }
+  }
+  return results;
+};
 
 interface Category {
   id: string;
