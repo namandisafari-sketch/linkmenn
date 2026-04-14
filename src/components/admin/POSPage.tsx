@@ -1237,7 +1237,7 @@ const POSPage = () => {
                 </div>
                 <p className="text-[10px] text-muted-foreground">
                   {item.sellingUnit
-                    ? `${item.product.stock * (item.product.pieces_per_unit || 1)} pcs available`
+                    ? `${item.product.stock * item.sellingUnit.perFullUnit} ${item.sellingUnit.name}s available`
                     : `${item.product.stock} ${item.product.unit} in stock`}
                 </p>
                 {editingPriceId === cartKey && (
