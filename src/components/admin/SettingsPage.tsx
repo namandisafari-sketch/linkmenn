@@ -15,7 +15,7 @@ const DEFAULT_RECEIPT = {
   email: "info@marvid.com",
   footerNote: "Thank you for choosing Marvid Pharmaceutical!",
   showLogo: true,
-  logoUrl: "",
+  logoUrl: "https://ogygtkyeepmaljsnoapg.supabase.co/storage/v1/object/public/product-images/receipt-logo/default-logo.png",
   logoSize: "60px",
   logoAlign: "center" as "left" | "center" | "right",
   paperWidth: "80mm",
