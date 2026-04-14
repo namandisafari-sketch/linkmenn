@@ -74,7 +74,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
       {/* Sidebar - fixed, does not scroll with content */}
       <aside className={`${sidebarOpen ? "w-60" : "w-16"} gradient-primary flex flex-col transition-all duration-200 hidden md:flex h-screen shrink-0`}>
         <div className="p-4 border-b border-primary-foreground/10 flex items-center justify-between shrink-0">
-          <img src={logo} alt="Marvid" className={`${sidebarOpen ? "h-8" : "h-6"} brightness-0 invert`} />
+          <img src={logo} alt="Marvid" className={`${sidebarOpen ? "h-14" : "h-8"} brightness-0 invert`} />
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-primary-foreground/60 hover:text-primary-foreground">
             <Menu className="h-4 w-4" />
           </button>

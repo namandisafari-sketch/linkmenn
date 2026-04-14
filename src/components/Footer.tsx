@@ -14,7 +14,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           <div>
-            <img src={logo} alt="Marvid Pharmacy Limited" className="h-[72px] w-auto brightness-0 invert p-0 m-0" />
+            <img src={logo} alt="Marvid Pharmacy Limited" className="h-[360px] w-auto brightness-0 invert p-0 m-0" />
             <p className="text-sm leading-relaxed opacity-70 mt-2">Affordable quality, reliable access, healthier communities.</p>
           </div>
 

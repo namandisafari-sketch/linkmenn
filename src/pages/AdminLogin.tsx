@@ -45,7 +45,7 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-8 animate-fade-in">
         <div className="text-center mb-8">
-          <img src={logo} alt="Marvid" className="h-12 mx-auto mb-4" />
+          <img src={logo} alt="Marvid" className="h-24 mx-auto mb-4" />
           <h1 className="text-xl font-bold flex items-center justify-center gap-2">
             <ShieldAlert className="h-5 w-5 text-primary" />
             Staff Portal

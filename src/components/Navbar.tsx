@@ -15,7 +15,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="Marvid Pharmacy Limited" className="h-[72px] w-auto p-0 m-0 object-contain" />
+          <img src={logo} alt="Marvid Pharmacy Limited" className="h-[360px] w-auto p-0 m-0 object-contain" />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
