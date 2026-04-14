@@ -364,7 +364,18 @@ const InventoryPage = () => {
                   </div>
                 </div>
                 {(p as any).unit_description && (
-                  <p className="text-[10px] text-muted-foreground italic">{(p as any).unit_description}</p>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground italic">{(p as any).unit_description}</p>
+                    {(() => {
+                      const bd = parseUnitBreakdown((p as any).unit_description);
+                      const prices = (p as any).unit_prices || {};
+                      if (bd.length === 0) return null;
+                      return bd.map(b => {
+                        const subPrice = prices[b.name] > 0 ? prices[b.name] : Math.round(Number(p.price) / b.perFullUnit);
+                        return <p key={b.name} className="text-[10px] text-muted-foreground">Per {b.name}: <strong>UGX {subPrice.toLocaleString()}</strong></p>;
+                      });
+                    })()}
+                  </div>
                 )}
                 {p.batch_number && (
                   <p className="text-[10px] text-muted-foreground font-mono">Batch: {p.batch_number}</p>
