@@ -3,21 +3,21 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/marvid-logo.png";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useBusinessSettings } from "@/hooks/useBusinessSettings";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const settings = useBusinessSettings();
 
   return (
     <footer className="bg-foreground text-background/80 py-14">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
           <div>
-            <img src={logo} alt="Marvin Pharma Ltd" className="h-24 w-auto brightness-0 invert p-0 m-0" />
+            <img src={logo} alt="Marvid Pharmacy Limited" className="h-[72px] w-auto brightness-0 invert p-0 m-0" />
             <p className="text-sm leading-relaxed opacity-70 mt-2">Affordable quality, reliable access, healthier communities.</p>
           </div>
 
-          {/* Company links */}
           <div>
             <h4 className="font-semibold text-[hsl(140,60%,35%)] mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
@@ -28,17 +28,15 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h4 className="font-semibold text-[hsl(140,60%,35%)] mb-4">Contact Us</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-[hsl(0,70%,50%)]" /> Wilson Rd, Old Kampala, Uganda</li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[hsl(210,80%,45%)]" /> marvinpharmaltd@gmail.com</li>
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[hsl(140,60%,35%)]" /> +256 758 246905</li>
+              <li className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-[hsl(0,70%,50%)]" /> {settings.address}</li>
+              <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[hsl(210,80%,45%)]" /> {settings.email}</li>
+              <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[hsl(140,60%,35%)]" /> {settings.phone}</li>
             </ul>
           </div>
 
-          {/* Newsletter */}
           <div>
             <h4 className="font-semibold text-[hsl(140,60%,35%)] mb-4">Insights</h4>
             <p className="text-sm opacity-70 mb-3">Stay updated with our products and industry news.</p>
@@ -62,7 +60,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-background/10 pt-6 flex flex-col md:flex-row items-center justify-between text-xs opacity-60">
-          <span>© 2026 Marvin Pharma Ltd. All rights reserved.</span>
+          <span>© 2026 {settings.businessName}. All rights reserved.</span>
           <div className="flex gap-4 mt-2 md:mt-0">
             <a href="#" className="hover:text-background">Privacy</a>
             <a href="#" className="hover:text-background">Terms</a>

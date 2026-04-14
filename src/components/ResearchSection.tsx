@@ -5,7 +5,6 @@ const ResearchSection = () => (
   <section className="py-16 md:py-24 bg-background">
     <div className="max-w-7xl mx-auto px-6">
       <div className="grid md:grid-cols-2 gap-12 items-center">
-        {/* Left content */}
         <div>
           <span className="inline-block text-xs font-semibold text-muted-foreground border border-border rounded-full px-4 py-1.5 mb-4">
             Research
@@ -14,7 +13,7 @@ const ResearchSection = () => (
             Evidence-led Product Development & Public Health Impact
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-8">
-            At Marvin Pharma, we leverage clinical research and scientific innovation to develop high-quality pharmaceutical solutions, focusing on malaria treatment, disease prevention, and improving overall public health outcomes. Our research is guided by real-world evidence, ensuring that our products are both effective and safe for the communities we serve.
+            At Marvid Pharmacy Limited, we leverage clinical research and scientific innovation to develop high-quality pharmaceutical solutions, focusing on malaria treatment, disease prevention, and improving overall public health outcomes. Our research is guided by real-world evidence, ensuring that our products are both effective and safe for the communities we serve.
           </p>
 
           <div className="space-y-4">
@@ -33,7 +32,6 @@ const ResearchSection = () => (
           </div>
         </div>
 
-        {/* Right image */}
         <div className="rounded-2xl overflow-hidden shadow-xl">
           <img src={researchImg} alt="Research laboratory" className="w-full h-[400px] object-cover" loading="lazy" width={1280} height={864} />
         </div>
