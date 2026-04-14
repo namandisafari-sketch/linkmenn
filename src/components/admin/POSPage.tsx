@@ -297,13 +297,13 @@ const POSPage = () => {
     barcodeRef.current?.focus();
   };
 
-  const updateQty = (productId: string, delta: number, byPiece?: boolean) => {
+  const updateQty = (productId: string, delta: number, unitName?: string) => {
     setCart((prev) => prev.map((i) => {
       if (i.product.id !== productId) return i;
-      if (byPiece !== undefined && !!i.sellingUnit !== byPiece) return i;
+      if (unitName !== undefined && (i.sellingUnit?.name ?? '__full__') !== unitName) return i;
       const newQty = i.quantity + delta;
       if (newQty <= 0) return i;
-      const maxQty = !!i.sellingUnit ? i.product.stock * (i.product.pieces_per_unit || 1) : i.product.stock;
+      const maxQty = i.sellingUnit ? i.product.stock * i.sellingUnit.perFullUnit : i.product.stock;
       if (newQty > maxQty) { toast.error("Not enough stock"); return i; }
       return { ...i, quantity: newQty };
     }));
