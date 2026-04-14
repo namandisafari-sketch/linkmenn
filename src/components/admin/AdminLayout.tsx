@@ -92,7 +92,10 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
                 }`}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
+                {sidebarOpen && <span className="flex-1">{item.label}</span>}
+                {sidebarOpen && item.shortcut && (
+                  <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-primary-foreground/10 text-primary-foreground/50">Alt+{item.shortcut}</kbd>
+                )}
               </Link>
             ))}
           </nav>
