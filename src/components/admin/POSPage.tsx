@@ -469,6 +469,21 @@ const POSPage = () => {
           return;
         }
 
+        // P - Add selected product by piece
+        if (e.key === "p" || e.key === "P") {
+          if (selectedProductIndex >= 0 && selectedProductIndex < filtered.length) {
+            const p = filtered[selectedProductIndex];
+            if (p.pieces_per_unit > 1) {
+              e.preventDefault();
+              addToCart(p, 1, true);
+              lastAddedIdRef.current = p.id;
+              toast.success(`Added 1 piece of ${p.name}`);
+              setSelectedProductIndex(-1);
+            }
+          }
+          return;
+        }
+
         // Number keys (0-9) - Type quantity for last added cart item
         if (e.key >= "0" && e.key <= "9" && cart.length > 0) {
           e.preventDefault();
