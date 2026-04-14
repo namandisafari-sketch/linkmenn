@@ -1067,13 +1067,27 @@ const POSPage = () => {
                   )}
                   <div className="flex items-center justify-between mt-2">
                     <div>
-                      <span className="text-sm font-bold text-primary">UGX {(customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price).toLocaleString()}</span>
-                      {customerType === "wholesale" && p.wholesale_price > 0 && (
-                        <span className="text-[10px] text-muted-foreground line-through ml-1">UGX {p.price.toLocaleString()}</span>
-                      )}
-                      {p.buying_price > 0 && (
-                        <span className="block text-[10px] text-muted-foreground">Cost: UGX {p.buying_price.toLocaleString()}</span>
-                      )}
+                      {(() => {
+                        const sellingPrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
+                        const profit = p.buying_price > 0 ? sellingPrice - p.buying_price : 0;
+                        const profitPct = p.buying_price > 0 ? Math.round((profit / p.buying_price) * 100) : 0;
+                        return (
+                          <>
+                            <span className="text-sm font-bold text-primary">UGX {sellingPrice.toLocaleString()}</span>
+                            {customerType === "wholesale" && p.wholesale_price > 0 && (
+                              <span className="text-[10px] text-muted-foreground line-through ml-1">UGX {p.price.toLocaleString()}</span>
+                            )}
+                            {p.buying_price > 0 && (
+                              <span className="block text-[10px] text-muted-foreground">Cost: UGX {p.buying_price.toLocaleString()}</span>
+                            )}
+                            {p.buying_price > 0 && (
+                              <span className={`block text-[10px] font-semibold ${profit > 0 ? 'text-emerald-600' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                Profit: UGX {profit.toLocaleString()} ({profitPct}%)
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                       {p.pieces_per_unit > 1 && (
                         <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>
                       )}
@@ -1191,62 +1205,109 @@ const POSPage = () => {
                 {item.customPrice !== null && editingPriceId !== cartKey && (
                   <p className="text-[10px] text-warning mt-1">Negotiated: UGX {item.customPrice.toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</p>
                 )}
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    {editingQtyId === cartKey ? (
-                      <input
-                        type="number"
-                        value={tempQty}
-                        onChange={(e) => setTempQty(e.target.value)}
-                        onBlur={() => {
-                          const q = parseFloat(tempQty);
-                          if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
-                          setEditingQtyId(null);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            const q = parseFloat(tempQty);
-                            if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
-                            setEditingQtyId(null);
-                          }
-                          if (e.key === "Escape") setEditingQtyId(null);
-                        }}
-                        className="w-14 h-6 text-center text-sm font-medium border border-primary rounded bg-background outline-none"
-                        autoFocus
-                        min={1}
-                        max={maxQty}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setEditingQtyId(cartKey);
-                          setTempQty(String(item.quantity));
-                        }}
-                        className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
-                        title="Click to type exact quantity"
-                      >
-                        {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
-                      </button>
-                    )}
-                    <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-                  <span className="text-sm font-semibold">UGX {(effectivePrice * item.quantity).toLocaleString()}</span>
-                </div>
+                {(() => {
+                  const costPrice = item.sellingByPiece && item.product.pieces_per_unit > 1
+                    ? item.product.buying_price / item.product.pieces_per_unit
+                    : item.product.buying_price;
+                  const unitProfit = effectivePrice - costPrice;
+                  const totalProfit = unitProfit * item.quantity;
+                  return (
+                    <>
+                      {item.product.buying_price > 0 && (
+                        <div className="flex items-center justify-between text-[10px] mt-1">
+                          <span className="text-muted-foreground">Cost: UGX {Math.round(costPrice).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}</span>
+                          <span className={`font-semibold ${unitProfit > 0 ? 'text-emerald-600' : unitProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            Profit: UGX {Math.round(unitProfit).toLocaleString()}/{item.sellingByPiece ? "pc" : "unit"}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateQty(item.product.id, -1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          {editingQtyId === cartKey ? (
+                            <input
+                              type="number"
+                              value={tempQty}
+                              onChange={(e) => setTempQty(e.target.value)}
+                              onBlur={() => {
+                                const q = parseFloat(tempQty);
+                                if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
+                                setEditingQtyId(null);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const q = parseFloat(tempQty);
+                                  if (q > 0 && q <= maxQty) setExactQty(item.product.id, q);
+                                  setEditingQtyId(null);
+                                }
+                                if (e.key === "Escape") setEditingQtyId(null);
+                              }}
+                              className="w-14 h-6 text-center text-sm font-medium border border-primary rounded bg-background outline-none"
+                              autoFocus
+                              min={1}
+                              max={maxQty}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setEditingQtyId(cartKey);
+                                setTempQty(String(item.quantity));
+                              }}
+                              className="text-sm font-medium w-14 text-center hover:bg-accent rounded py-0.5 border border-transparent hover:border-border transition-colors"
+                              title="Click to type exact quantity"
+                            >
+                              {item.quantity} <span className="text-[9px] text-muted-foreground">{item.sellingByPiece ? "pcs" : item.product.unit}</span>
+                            </button>
+                          )}
+                          <button onClick={() => updateQty(item.product.id, 1, item.sellingByPiece)} className="h-6 w-6 rounded bg-background border border-border flex items-center justify-center hover:bg-accent">
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold block">UGX {(effectivePrice * item.quantity).toLocaleString()}</span>
+                          {item.product.buying_price > 0 && (
+                            <span className={`text-[10px] font-semibold ${totalProfit > 0 ? 'text-emerald-600' : totalProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              +UGX {Math.round(totalProfit).toLocaleString()} profit
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             );
           })}
         </div>
 
         <div className="p-4 border-t border-border space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">Total</span>
-            <span className="text-lg font-bold text-primary">UGX {total.toLocaleString()}</span>
-          </div>
+          {(() => {
+            const totalProfit = cart.reduce((sum, item) => {
+              const ep = getEffectivePrice(item.product, item.customPrice, item.sellingByPiece);
+              const cp = item.sellingByPiece && item.product.pieces_per_unit > 1
+                ? item.product.buying_price / item.product.pieces_per_unit
+                : item.product.buying_price;
+              return sum + (ep - cp) * item.quantity;
+            }, 0);
+            return (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Total</span>
+                  <span className="text-lg font-bold text-primary">UGX {total.toLocaleString()}</span>
+                </div>
+                {cart.length > 0 && (
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground">Total Profit</span>
+                    <span className={`font-bold ${totalProfit > 0 ? 'text-emerald-600' : totalProfit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      UGX {Math.round(totalProfit).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </>
+            );
+          })()}
           <Button className="w-full gap-2" size="lg" disabled={cart.length === 0} onClick={() => { setCheckoutOpen(true); setAmountGiven(""); }}>
             <CreditCard className="h-4 w-4" /> Checkout <kbd className="ml-1 text-[10px] opacity-60 font-mono">F8</kbd>
           </Button>
