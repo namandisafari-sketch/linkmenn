@@ -373,6 +373,40 @@ const StockPurchasePage = () => {
             </div>
           </div>
 
+          {/* Supplier Info Card - shows when supplier selected */}
+          {supplierId && (() => {
+            const sup = suppliers.find(s => s.id === supplierId);
+            if (!sup) return null;
+            return (
+              <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Truck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{sup.name}</p>
+                    {sup.contact_person && <p className="text-xs text-muted-foreground">{sup.contact_person}</p>}
+                  </div>
+                </div>
+                {sup.phone && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" /> {sup.phone}
+                  </div>
+                )}
+                {sup.address && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5" /> {sup.address}
+                  </div>
+                )}
+                {sup.payment_terms && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <FileText className="h-3.5 w-3.5" /> Terms: {sup.payment_terms}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Line Items - Card Based */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
