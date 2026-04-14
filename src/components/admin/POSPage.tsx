@@ -1067,13 +1067,27 @@ const POSPage = () => {
                   )}
                   <div className="flex items-center justify-between mt-2">
                     <div>
-                      <span className="text-sm font-bold text-primary">UGX {(customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price).toLocaleString()}</span>
-                      {customerType === "wholesale" && p.wholesale_price > 0 && (
-                        <span className="text-[10px] text-muted-foreground line-through ml-1">UGX {p.price.toLocaleString()}</span>
-                      )}
-                      {p.buying_price > 0 && (
-                        <span className="block text-[10px] text-muted-foreground">Cost: UGX {p.buying_price.toLocaleString()}</span>
-                      )}
+                      {(() => {
+                        const sellingPrice = customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price;
+                        const profit = p.buying_price > 0 ? sellingPrice - p.buying_price : 0;
+                        const profitPct = p.buying_price > 0 ? Math.round((profit / p.buying_price) * 100) : 0;
+                        return (
+                          <>
+                            <span className="text-sm font-bold text-primary">UGX {sellingPrice.toLocaleString()}</span>
+                            {customerType === "wholesale" && p.wholesale_price > 0 && (
+                              <span className="text-[10px] text-muted-foreground line-through ml-1">UGX {p.price.toLocaleString()}</span>
+                            )}
+                            {p.buying_price > 0 && (
+                              <span className="block text-[10px] text-muted-foreground">Cost: UGX {p.buying_price.toLocaleString()}</span>
+                            )}
+                            {p.buying_price > 0 && (
+                              <span className={`block text-[10px] font-semibold ${profit > 0 ? 'text-emerald-600' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                Profit: UGX {profit.toLocaleString()} ({profitPct}%)
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                       {p.pieces_per_unit > 1 && (
                         <span className="block text-[10px] text-muted-foreground">Unit: UGX {Math.round((customerType === "wholesale" && p.wholesale_price > 0 ? p.wholesale_price : p.price) / p.pieces_per_unit).toLocaleString()}/pc</span>
                       )}
