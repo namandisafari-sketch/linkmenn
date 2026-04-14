@@ -625,6 +625,37 @@ const StockPurchasePage = () => {
                                 </div>
                               </div>
                             ))}
+                            {items.filter((i: any) => i.type === "item").length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold mb-2">Items Purchased</p>
+                                <table className="w-full text-xs">
+                                  <thead><tr className="text-muted-foreground border-b border-border">
+                                    <th className="text-left py-1.5 font-medium">#</th>
+                                    <th className="text-left py-1.5 font-medium">Product</th>
+                                    <th className="text-right py-1.5 font-medium">Qty</th>
+                                    <th className="text-right py-1.5 font-medium">Rate</th>
+                                    <th className="text-right py-1.5 font-medium">Amount</th>
+                                  </tr></thead>
+                                  <tbody>
+                                    {items.filter((i: any) => i.type === "item").map((item: any, idx: number) => (
+                                      <tr key={item.id} className="border-b border-border">
+                                        <td className="py-1.5 text-muted-foreground">{idx + 1}</td>
+                                        <td className="py-1.5 font-medium">{item.products?.name || item.description || "Unknown"}</td>
+                                        <td className="text-right py-1.5">{item.quantity} {item.products?.unit || ""}</td>
+                                        <td className="text-right py-1.5">UGX {Number(item.rate).toLocaleString()}</td>
+                                        <td className="text-right py-1.5 font-semibold">UGX {Number(item.amount).toLocaleString()}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot>
+                                    <tr className="font-bold">
+                                      <td colSpan={4} className="text-right py-1.5">Total</td>
+                                      <td className="text-right py-1.5">UGX {items.filter((i: any) => i.type === "item").reduce((s: number, i: any) => s + Number(i.amount), 0).toLocaleString()}</td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
+                            )}
                             {items.filter((i: any) => i.type === "ledger").length > 0 && (
                               <div>
                                 <p className="text-xs font-semibold mb-2">Ledger Entries</p>
