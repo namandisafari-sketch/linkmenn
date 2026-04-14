@@ -4,7 +4,7 @@ const VisionValues = () => (
       <div className="text-center mb-12">
         <h2 className="text-2xl md:text-3xl font-bold text-[hsl(140,60%,35%)] mb-4">Our Vision & Values</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          We aim to be established as the best pharmaceutical company in Uganda, recognized for expertise, innovation, and responsible entrepreneurship.
+          Marvid Pharmacy Limited aims to be established as the best pharmaceutical company in Uganda, recognized for expertise, innovation, and responsible entrepreneurship.
         </p>
       </div>
 
@@ -27,11 +27,10 @@ const VisionValues = () => (
         </div>
       </div>
 
-      {/* Goals */}
       <div className="bg-card border border-border rounded-2xl p-8 text-center">
         <h3 className="font-bold text-[hsl(140,60%,35%)] mb-3">Our Goals</h3>
         <p className="text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          We are committed to advancing community health by focusing 65% of our resources on combating malaria with WHO-prequalified medicines while driving education, prevention, and awareness initiatives to foster a healthier, resilient society.
+          Marvid Pharmacy Limited is committed to advancing community health by focusing 65% of our resources on combating malaria with WHO-prequalified medicines while driving education, prevention, and awareness initiatives to foster a healthier, resilient society.
         </p>
       </div>
     </div>

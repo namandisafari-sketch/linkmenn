@@ -13,9 +13,9 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="Marvin Pharma Ltd" className="h-24 w-auto p-0 m-0" />
+          <img src={logo} alt="Marvid Pharmacy Limited" className="h-[72px] w-auto p-0 m-0 object-contain" />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -62,6 +62,7 @@ const Navbar = () => {
         <div className="md:hidden border-t border-border bg-background animate-fade-in">
           <div className="px-6 py-4 flex flex-col gap-3">
             <Link to="/" className="text-sm font-medium py-2" onClick={() => setMobileOpen(false)}>Home</Link>
+            <Link to="/shop" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>Products</Link>
             <a href="#about" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>About</a>
             <a href="#contact" className="text-sm font-medium py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>Contact</a>
             {user ? (
