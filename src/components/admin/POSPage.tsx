@@ -657,13 +657,18 @@ const POSPage = () => {
 
       if (orderErr) throw orderErr;
 
-      const items = cart.map((i) => ({
-        order_id: order.id,
-        product_id: i.product.id,
-        quantity: i.quantity,
-        unit_price: i.product.price,
-        custom_unit_price: i.customPrice !== null ? i.customPrice : (customerType === "wholesale" && i.product.wholesale_price > 0 ? i.product.wholesale_price : null),
-      }));
+      const items = cart.map((i) => {
+        const effectivePrice = getEffectivePrice(i.product, i.customPrice, i.sellingUnit);
+        return {
+          order_id: order.id,
+          product_id: i.product.id,
+          quantity: i.quantity,
+          unit_price: effectivePrice,
+          custom_unit_price: i.customPrice !== null ? i.customPrice : (
+            i.sellingUnit ? effectivePrice : (customerType === "wholesale" && i.product.wholesale_price > 0 ? i.product.wholesale_price : null)
+          ),
+        };
+      });
 
       const { error: itemsErr } = await supabase.from("order_items").insert(items as any);
       if (itemsErr) throw itemsErr;
