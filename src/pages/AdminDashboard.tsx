@@ -29,8 +29,7 @@ import AccountingPage from "@/components/admin/AccountingPage";
 import BatchManagementPage from "@/components/admin/BatchManagementPage";
 import SupplierManagementPage from "@/components/admin/SupplierManagementPage";
 import StockPurchasePage from "@/components/admin/StockPurchasePage";
-import StockUpdatePage from "@/components/admin/StockUpdatePage";
-// PurchaseHistoryPage removed - consolidated into StockPurchasePage
+// StockUpdatePage and PurchaseHistoryPage removed - consolidated
 import DayBookPage from "@/components/admin/DayBookPage";
 import BalanceSheetPage from "@/components/admin/BalanceSheetPage";
 
