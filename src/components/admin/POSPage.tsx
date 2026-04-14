@@ -993,6 +993,7 @@ const POSPage = () => {
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Tab</kbd> Navigate</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Enter</kbd> Add/Checkout</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">0-9</kbd> Set Qty</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">P</kbd> Add by Piece</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F4</kbd> Wholesale</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F5</kbd> Reprint</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Alt+Space</kbd> Past Receipts</span>
