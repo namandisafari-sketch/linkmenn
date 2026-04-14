@@ -1351,7 +1351,7 @@ const POSPage = () => {
             const totalProfit = cart.reduce((sum, item) => {
               const ep = getEffectivePrice(item.product, item.customPrice, item.sellingUnit);
               const cp = item.sellingUnit
-                ? item.product.buying_price / item.product.pieces_per_unit
+                ? item.product.buying_price / item.sellingUnit.perFullUnit
                 : item.product.buying_price;
               return sum + (ep - cp) * item.quantity;
             }, 0);
