@@ -246,6 +246,23 @@ const AdminDashboard = () => {
   const { isAdmin, loading } = useAuth();
   const path = location.pathname;
 
+  // Save current admin route so user resumes where they left off
+  useEffect(() => {
+    if (path.startsWith("/admin")) {
+      localStorage.setItem("marvid_last_admin_route", path);
+    }
+  }, [path]);
+
+  // On mount, restore last route if landing on /admin root
+  useEffect(() => {
+    if (!loading && isAdmin && path === "/admin") {
+      const lastRoute = localStorage.getItem("marvid_last_admin_route");
+      if (lastRoute && lastRoute !== "/admin" && lastRoute.startsWith("/admin/")) {
+        navigate(lastRoute, { replace: true });
+      }
+    }
+  }, [loading, isAdmin]);
+
   useEffect(() => {
     if (!loading && !isAdmin) {
       navigate("/admin/login");
