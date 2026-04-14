@@ -45,15 +45,30 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
   const { signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const currentPath = location.pathname;
 
   useEffect(() => {
     const goOnline = () => setIsOnline(true);
     const goOffline = () => setIsOnline(false);
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
-    return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+      document.removeEventListener("fullscreenchange", onFsChange);
+    };
   }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  };
 
   return (
     <div className="h-screen flex bg-muted/30 overflow-hidden">
@@ -106,6 +121,9 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
               {isOnline ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               {isOnline ? "Online" : "Offline"}
             </div>
+            <button onClick={toggleFullscreen} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-accent transition-colors" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </button>
             <ThemeToggle />
             {actions}
           </div>
