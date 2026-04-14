@@ -314,6 +314,17 @@ const StockPurchasePage = () => {
         await supabase.from("purchase_order_items").insert(poItems as any);
       }
 
+      // Save voucher items (for receipt display)
+      const voucherItems = lines.map(line => ({
+        voucher_id: (voucher as any).id,
+        product_id: line.product_id,
+        quantity: line.quantity,
+        rate: line.purchase_price,
+        amount: line.quantity * line.purchase_price,
+        description: line.batch_number,
+      }));
+      await supabase.from("voucher_items").insert(voucherItems as any);
+
       for (const line of lines) {
         await supabase.from("product_batches").insert({
           product_id: line.product_id, batch_number: line.batch_number,
