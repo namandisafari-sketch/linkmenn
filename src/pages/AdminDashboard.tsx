@@ -31,7 +31,7 @@ import SupplierManagementPage from "@/components/admin/SupplierManagementPage";
 import StockPurchasePage from "@/components/admin/StockPurchasePage";
 // StockUpdatePage and PurchaseHistoryPage removed - consolidated
 import DayBookPage from "@/components/admin/DayBookPage";
-import BalanceSheetPage from "@/components/admin/BalanceSheetPage";
+import ExpensePage from "@/components/admin/ExpensePage";
 
 const DashboardOverview = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
