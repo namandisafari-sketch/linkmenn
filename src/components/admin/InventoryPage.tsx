@@ -36,11 +36,28 @@ interface Category {
   icon: string | null;
 }
 
+// Parse unit_description like "1 pack =3strip=30tabs" into sub-unit options
+const parseUnitBreakdown = (unitDescription: string | null): { name: string; perFullUnit: number }[] => {
+  if (!unitDescription) return [];
+  const segments = unitDescription.split("=").map(s => s.trim()).filter(Boolean);
+  if (segments.length <= 1) return [];
+  const results: { name: string; perFullUnit: number }[] = [];
+  for (let i = 1; i < segments.length; i++) {
+    const match = segments[i].match(/^(\d+)\s*(.+)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const name = match[2].trim().replace(/s$/, '');
+      if (count > 0) results.push({ name, perFullUnit: count });
+    }
+  }
+  return results;
+};
+
 const EMPTY_FORM = {
   name: "", description: "", category_id: "", price: 0, wholesale_price: 0, buying_price: 0, unit: "Pack",
   stock: 0, batch_number: "", expiry_date: "", requires_prescription: false,
   is_active: true, product_code: "", prescription_info: "",
-  pieces_per_unit: 1, unit_description: "",
+  pieces_per_unit: 1, unit_description: "", unit_prices: {} as Record<string, number>,
 };
 
 const InventoryPage = () => {
