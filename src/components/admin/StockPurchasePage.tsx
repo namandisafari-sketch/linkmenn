@@ -267,6 +267,25 @@ const StockPurchasePage = () => {
         total_amount: totalAmount, amount_paid: 0, status: "unpaid",
       } as any);
 
+      // Create purchase order linked to supplier
+      const { data: po } = await supabase.from("purchase_orders").insert({
+        supplier_id: supplierId,
+        total_amount: totalAmount,
+        notes: `Invoice: ${invoiceNumber}. ${notes}`.trim(),
+        status: "received",
+      } as any).select().single();
+
+      // Create purchase order items linked to products
+      if (po) {
+        const poItems = lines.map(line => ({
+          purchase_order_id: (po as any).id,
+          product_id: line.product_id,
+          quantity: line.quantity,
+          unit_price: line.purchase_price,
+        }));
+        await supabase.from("purchase_order_items").insert(poItems as any);
+      }
+
       for (const line of lines) {
         await supabase.from("product_batches").insert({
           product_id: line.product_id, batch_number: line.batch_number,
