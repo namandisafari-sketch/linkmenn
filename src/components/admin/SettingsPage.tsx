@@ -151,9 +151,6 @@ const SettingsPage = () => {
       {/* Full System Excel Export */}
       <ExcelExportSection />
 
-      {/* CSV Data Export */}
-      <DataExportSection />
-
       {/* Smart Import Engine */}
       <SmartImportEngine />
 
