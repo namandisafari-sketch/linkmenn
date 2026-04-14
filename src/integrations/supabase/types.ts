@@ -487,6 +487,7 @@ export type Database = {
           stock: number
           unit: string
           unit_description: string | null
+          unit_prices: Json | null
           updated_at: string
           wholesale_price: number | null
         }
@@ -510,6 +511,7 @@ export type Database = {
           stock?: number
           unit?: string
           unit_description?: string | null
+          unit_prices?: Json | null
           updated_at?: string
           wholesale_price?: number | null
         }
@@ -533,6 +535,7 @@ export type Database = {
           stock?: number
           unit?: string
           unit_description?: string | null
+          unit_prices?: Json | null
           updated_at?: string
           wholesale_price?: number | null
         }
