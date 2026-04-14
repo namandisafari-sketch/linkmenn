@@ -598,7 +598,7 @@ const POSPage = () => {
       if (prod) {
         const qty = Math.min(item.quantity, prod.stock);
         if (qty > 0) {
-          setCart(prev => [...prev, { product: prod, quantity: qty, customPrice: null, sellingByPiece: false }]);
+          setCart(prev => [...prev, { product: prod, quantity: qty, customPrice: null, sellingUnit: null }]);
         }
       }
     }
