@@ -154,20 +154,19 @@ const StockPurchasePage = () => {
   useEffect(() => { if (showHistory) fetchHistory(); }, [showHistory]);
 
   const loadPurchaseItems = async (voucherId: string) => {
-    if (purchaseItems[voucherId]) return;
+    if (purchaseItems[voucherId]) return purchaseItems[voucherId];
     const [invoiceRes, ledgerRes, voucherItemsRes] = await Promise.all([
       supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle(),
       supabase.from("general_ledger").select("*").eq("voucher_id", voucherId),
       supabase.from("voucher_items").select("*, products(name, unit)").eq("voucher_id", voucherId),
     ]);
-    setPurchaseItems(prev => ({
-      ...prev,
-      [voucherId]: [
-        ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
-        ...(ledgerRes.data || []).map((l: any) => ({ type: "ledger", ...l })),
-        ...(voucherItemsRes.data || []).map((v: any) => ({ type: "item", ...v })),
-      ],
-    }));
+    const loadedItems = [
+      ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
+      ...(ledgerRes.data || []).map((l: any) => ({ type: "ledger", ...l })),
+      ...(voucherItemsRes.data || []).map((v: any) => ({ type: "item", ...v })),
+    ];
+    setPurchaseItems(prev => ({ ...prev, [voucherId]: loadedItems }));
+    return loadedItems;
   };
 
   const getStatusBadge = (status: string) => {
@@ -212,14 +211,14 @@ const StockPurchasePage = () => {
     }
   };
 
-  const printPurchaseReceipt = (purchase: PurchaseRecord) => {
+  const printPurchaseReceipt = (purchase: PurchaseRecord, itemsOverride?: any[]) => {
     const settingsRaw = localStorage.getItem("marvid_receipt_settings");
     const settings = settingsRaw ? JSON.parse(settingsRaw) : {
       businessName: "Marvid Pharmaceutical UG", address: "Kampala, Uganda",
       phone: "+256 700 000000", paperWidth: "80mm", fontSize: "13px",
     };
     const invoiceNum = purchase.narration?.match(/Invoice:\s*([^\s.]+)/)?.[1] || purchase.voucher_number;
-    const items = purchaseItems[purchase.id] || [];
+    const items = itemsOverride || purchaseItems[purchase.id] || [];
     const invoice = items.find((i: any) => i.type === "invoice");
     const purchasedItems = items.filter((i: any) => i.type === "item");
     const totalAmt = Number(purchase.total_amount);
@@ -770,10 +769,10 @@ const StockPurchasePage = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-sm">UGX {Number(purchase.total_amount).toLocaleString()}</span>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => {
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={async (e) => {
                           e.stopPropagation();
-                          if (!purchaseItems[purchase.id]) loadPurchaseItems(purchase.id).then(() => printPurchaseReceipt(purchase));
-                          else printPurchaseReceipt(purchase);
+                          const items = await loadPurchaseItems(purchase.id);
+                          printPurchaseReceipt(purchase, items);
                         }} title="Reprint receipt"><Printer className="h-3.5 w-3.5" /></Button>
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
