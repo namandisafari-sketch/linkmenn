@@ -716,24 +716,23 @@ const StockPurchasePage = () => {
             </div>
           </div>
 
-          {/* Totals Summary Card */}
-          <div className="bg-card rounded-xl border-2 border-primary/30 p-5">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-card rounded-xl border-2 border-primary/30 p-3 md:p-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Items</p>
-                <p className="text-2xl font-black">{lines.length}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Items</p>
+                <p className="text-xl md:text-2xl font-black">{lines.length}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Total Qty</p>
-                <p className="text-2xl font-black">{lines.reduce((s, l) => s + l.quantity, 0)}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Total Qty</p>
+                <p className="text-xl md:text-2xl font-black">{lines.reduce((s, l) => s + l.quantity, 0)}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Grand Total</p>
-                <p className="text-2xl font-black text-primary">UGX {totalAmount.toLocaleString()}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Grand Total</p>
+                <p className="text-lg md:text-2xl font-black text-primary">UGX {totalAmount.toLocaleString()}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Expected Profit</p>
-                <p className={`text-2xl font-black ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Expected Profit</p>
+                <p className={`text-lg md:text-2xl font-black ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
                   UGX {totalProfit.toLocaleString()}
                 </p>
               </div>
