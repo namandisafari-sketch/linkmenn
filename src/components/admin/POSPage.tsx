@@ -87,6 +87,7 @@ const POSPage = () => {
   const [tempQty, setTempQty] = useState("");
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(-1);
+  const [mobileView, setMobileView] = useState<"products" | "cart">("products");
   const [qtyBuffer, setQtyBuffer] = useState("");
   const qtyBufferTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAddedIdRef = useRef<string | null>(null);
@@ -1013,11 +1014,11 @@ const POSPage = () => {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
-      {/* Product grid */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Shortcut hint bar */}
-        <div className="flex items-center justify-between mb-2 px-1">
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100vh-8rem)] relative">
+      {/* Product grid - hidden on mobile when viewing cart */}
+      <div className={`flex-1 flex flex-col min-w-0 ${mobileView === "cart" ? "hidden md:flex" : "flex"}`}>
+        {/* Shortcut hint bar - hidden on mobile */}
+        <div className="hidden md:flex items-center justify-between mb-2 px-1">
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono flex-wrap">
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Space</kbd> Search</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Tab</kbd> Navigate</span>
@@ -1039,38 +1040,38 @@ const POSPage = () => {
         </div>
 
         {/* Barcode scanner */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-2 md:mb-3">
           <div className="relative flex-1">
             <ScanBarcode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               ref={barcodeRef}
-              placeholder="Scan barcode or enter product code... (F2)"
+              placeholder="Scan barcode... (F2)"
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleBarcodeScan(); }}
-              className="pl-9 font-mono"
+              className="pl-9 font-mono text-sm"
             />
           </div>
-          <Button variant="secondary" onClick={handleBarcodeScan} disabled={!barcodeInput.trim()}>
+          <Button variant="secondary" size="sm" onClick={handleBarcodeScan} disabled={!barcodeInput.trim()} className="hidden sm:flex">
             <Plus className="h-4 w-4 mr-1" /> Add
           </Button>
         </div>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-3 md:mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               ref={searchRef}
-              placeholder="Search products... (F1) ↑↓ to navigate, Enter to add"
+              placeholder="Search products... (F1)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 text-sm"
             />
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-10 px-2 md:px-3 rounded-md border border-input bg-background text-sm max-w-[100px] md:max-w-none"
           >
             <option value="">All</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1083,17 +1084,17 @@ const POSPage = () => {
           ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No products found</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
               {filtered.map((p, idx) => (
                 <div
                   key={p.id}
-                  className={`bg-card border rounded-xl p-3 text-left hover:border-primary hover:shadow-sm transition-all group relative ${
+                  className={`bg-card border rounded-xl p-2.5 md:p-3 text-left hover:border-primary hover:shadow-sm transition-all group relative ${
                     idx === selectedProductIndex ? "border-primary ring-2 ring-primary/30" : "border-border"
                   }`}
                 >
                   {/* Alt+N indicator */}
                   {idx < 9 && (
-                    <span className="absolute top-1 right-1 text-[9px] font-mono text-muted-foreground/50">
+                    <span className="absolute top-1 right-1 text-[9px] font-mono text-muted-foreground/50 hidden md:inline">
                       Alt+{idx + 1}
                     </span>
                   )}
@@ -1195,8 +1196,14 @@ const POSPage = () => {
         </div>
       </div>
 
-      {/* Cart sidebar */}
-      <div className="w-80 bg-card border border-border rounded-xl flex flex-col shrink-0">
+      {/* Cart sidebar - hidden on mobile when viewing products */}
+      <div className={`w-full md:w-80 bg-card border border-border rounded-xl flex flex-col shrink-0 ${mobileView === "products" ? "hidden md:flex" : "flex"} ${mobileView === "cart" ? "flex-1" : ""}`}>
+        {/* Mobile back button */}
+        <div className="md:hidden p-3 border-b border-border">
+          <button onClick={() => setMobileView("products")} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" /> Back to Products
+          </button>
+        </div>
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" /> Cart
@@ -1809,6 +1816,21 @@ const POSPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile floating cart button */}
+      {mobileView === "products" && (
+        <button
+          onClick={() => setMobileView("cart")}
+          className="md:hidden fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 active:scale-95 transition-all"
+        >
+          <ShoppingCart className="h-6 w-6" />
+          {cart.length > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-[11px] flex items-center justify-center font-bold">
+              {cart.length}
+            </span>
+          )}
+        </button>
       )}
     </div>
   );
