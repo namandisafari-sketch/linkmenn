@@ -434,19 +434,19 @@ const StockPurchasePage = () => {
     <div className="space-y-4 purchase-form">
       {/* Overdue Notification Banner */}
       {overdueInvoices.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 md:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
             <div>
               <p className="font-semibold text-sm text-destructive">
                 {overdueInvoices.length} Overdue Invoice{overdueInvoices.length > 1 ? "s" : ""}
               </p>
               <p className="text-xs text-muted-foreground">
-                Total overdue: UGX {overdueInvoices.reduce((s, inv) => s + Number(inv.amount_due), 0).toLocaleString()}
+                Total: UGX {overdueInvoices.reduce((s, inv) => s + Number(inv.amount_due), 0).toLocaleString()}
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setShowOverduePanel(!showOverduePanel)} className="gap-1.5 text-destructive border-destructive/30">
+          <Button variant="outline" size="sm" onClick={() => setShowOverduePanel(!showOverduePanel)} className="gap-1.5 text-destructive border-destructive/30 w-full sm:w-auto">
             {showOverduePanel ? "Hide" : "View"} Details
             {showOverduePanel ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </Button>
@@ -467,19 +467,19 @@ const StockPurchasePage = () => {
                 ? differenceInDays(new Date(), new Date(inv.due_date))
                 : differenceInDays(new Date(), new Date(inv.invoice_date)) - 30;
               return (
-                <div key={inv.id} className="px-4 py-3 flex items-center justify-between text-sm">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{inv.supplier_name}</span>
+                <div key={inv.id} className="px-3 md:px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold truncate">{inv.supplier_name}</span>
                       {getStatusBadge(inv.status)}
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      Invoice #{inv.invoice_number || "N/A"} · {format(new Date(inv.invoice_date), "dd MMM yyyy")}
-                      <span className="text-destructive font-bold ml-2">({daysOverdue} days overdue)</span>
+                      #{inv.invoice_number || "N/A"} · {format(new Date(inv.invoice_date), "dd MMM yyyy")}
+                      <span className="text-destructive font-bold ml-2">({daysOverdue}d overdue)</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-destructive">UGX {Number(inv.amount_due).toLocaleString()}</span>
+                    <span className="font-bold text-destructive text-xs sm:text-sm">UGX {Number(inv.amount_due).toLocaleString()}</span>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditInvoice(inv)} title="Edit invoice">
                       <Edit2 className="h-3.5 w-3.5" />
                     </Button>
@@ -491,18 +491,16 @@ const StockPurchasePage = () => {
         </div>
       )}
 
-      {/* Header with tabs and shortcuts hint */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex gap-2">
-          <Button variant={!showHistory ? "default" : "outline"} onClick={() => setShowHistory(false)} className="gap-2">
-            <ShoppingCart className="h-4 w-4" /> New Purchase
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex gap-2 flex-1 min-w-0">
+          <Button variant={!showHistory ? "default" : "outline"} size="sm" onClick={() => setShowHistory(false)} className="gap-1.5 text-xs md:text-sm">
+            <ShoppingCart className="h-4 w-4" /> New
           </Button>
-          <Button variant={showHistory ? "default" : "outline"} onClick={() => setShowHistory(true)} className="gap-2">
+          <Button variant={showHistory ? "default" : "outline"} size="sm" onClick={() => setShowHistory(true)} className="gap-1.5 text-xs md:text-sm">
             <History className="h-4 w-4" /> History
-            <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+H</kbd>
           </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(!showShortcuts)} className="gap-1 text-xs text-muted-foreground">
+        <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(!showShortcuts)} className="gap-1 text-xs text-muted-foreground hidden sm:flex">
           <Keyboard className="h-3.5 w-3.5" /> Shortcuts
         </Button>
       </div>
@@ -530,8 +528,8 @@ const StockPurchasePage = () => {
       {!showHistory ? (
         <>
           {/* Purchase Details Card */}
-          <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-card rounded-xl border border-border p-4 md:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <h3 className="font-semibold flex items-center gap-2 text-base">
                 <ShoppingCart className="h-5 w-5 text-primary" /> Purchase Details
               </h3>
@@ -567,7 +565,7 @@ const StockPurchasePage = () => {
             const sup = suppliers.find(s => s.id === supplierId);
             if (!sup) return null;
             return (
-              <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-6 flex-wrap">
+              <div className="bg-card rounded-xl border border-border p-3 md:p-4 flex items-center gap-4 md:gap-6 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Truck className="h-5 w-5 text-primary" />
@@ -598,18 +596,18 @@ const StockPurchasePage = () => {
 
           {/* Line Items - Invoice Table Layout */}
           <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-              <h3 className="font-semibold text-base flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
+            <div className="flex items-center justify-between px-3 md:px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm md:text-base flex items-center gap-2">
+                <Package className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 Items ({lines.length})
               </h3>
-              <Button variant="outline" size="sm" onClick={addLine} className="gap-1">
-                <Plus className="h-3.5 w-3.5" /> Add Item
-                <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+N</kbd>
+              <Button variant="outline" size="sm" onClick={addLine} className="gap-1 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Add
               </Button>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -629,45 +627,16 @@ const StockPurchasePage = () => {
                     const lineTotal = line.quantity * line.purchase_price;
                     const isActive = activeLineIdx === idx;
                     return (
-                      <tr
-                        key={idx}
-                        className={`border-b border-border transition-colors cursor-pointer ${isActive ? "bg-primary/5" : "hover:bg-muted/20"}`}
-                        onClick={() => setActiveLineIdx(idx)}
-                      >
+                      <tr key={idx} className={`border-b border-border transition-colors cursor-pointer ${isActive ? "bg-primary/5" : "hover:bg-muted/20"}`} onClick={() => setActiveLineIdx(idx)}>
                         <td className="px-2 py-2 text-center text-xs font-bold text-muted-foreground">{idx + 1}</td>
-                        <td className="px-2 py-1.5">
-                          <SearchableSelect
-                            options={productOptions}
-                            value={line.product_id}
-                            onChange={v => updateLine(idx, "product_id", v)}
-                            placeholder="Search product..."
-                          />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-center w-16" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-xs" placeholder="Batch #" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-right text-xs" />
-                        </td>
-                        <td className="px-2 py-2 text-right font-bold text-xs">
-                          {lineTotal.toLocaleString()}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-right text-xs" />
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                            onClick={(e) => { e.stopPropagation(); removeLine(idx); }}
-                            disabled={lines.length <= 1}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
+                        <td className="px-2 py-1.5"><SearchableSelect options={productOptions} value={line.product_id} onChange={v => updateLine(idx, "product_id", v)} placeholder="Search product..." /></td>
+                        <td className="px-2 py-1.5"><Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-center w-16" /></td>
+                        <td className="px-2 py-1.5"><Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-xs" placeholder="Batch #" /></td>
+                        <td className="px-2 py-1.5"><Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" /></td>
+                        <td className="px-2 py-1.5"><Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-right text-xs" /></td>
+                        <td className="px-2 py-2 text-right font-bold text-xs">{lineTotal.toLocaleString()}</td>
+                        <td className="px-2 py-1.5"><Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-right text-xs" /></td>
+                        <td className="px-2 py-2 text-center"><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); removeLine(idx); }} disabled={lines.length <= 1}><Trash2 className="h-3.5 w-3.5" /></Button></td>
                       </tr>
                     );
                   })}
@@ -690,26 +659,80 @@ const StockPurchasePage = () => {
                 </tfoot>
               </table>
             </div>
+
+            {/* Mobile card layout */}
+            <div className="md:hidden divide-y divide-border">
+              {lines.map((line, idx) => {
+                const lineTotal = line.quantity * line.purchase_price;
+                return (
+                  <div key={idx} className={`p-3 space-y-2.5 ${activeLineIdx === idx ? "bg-primary/5" : ""}`} onClick={() => setActiveLineIdx(idx)}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-muted-foreground">Item #{idx + 1}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); removeLine(idx); }} disabled={lines.length <= 1}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <SearchableSelect options={productOptions} value={line.product_id} onChange={v => updateLine(idx, "product_id", v)} placeholder="Search product..." />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Qty</label>
+                        <Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Batch #</label>
+                        <Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-sm" placeholder="Batch" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Expiry</label>
+                        <Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Buy Price</label>
+                        <Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Sell Price</label>
+                        <Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-muted-foreground">Amount: </span>
+                      <span className="text-sm font-bold text-primary">UGX {lineTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {totalAmount > 0 && (
+                <div className="p-3 bg-muted/30">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase text-muted-foreground">Total</span>
+                    <span className="text-sm font-bold text-primary">UGX {totalAmount.toLocaleString()}</span>
+                  </div>
+                  <p className="text-[10px] italic text-muted-foreground mt-1">{numberToWords(totalAmount)}</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Totals Summary Card */}
-          <div className="bg-card rounded-xl border-2 border-primary/30 p-5">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-card rounded-xl border-2 border-primary/30 p-3 md:p-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Items</p>
-                <p className="text-2xl font-black">{lines.length}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Items</p>
+                <p className="text-xl md:text-2xl font-black">{lines.length}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Total Qty</p>
-                <p className="text-2xl font-black">{lines.reduce((s, l) => s + l.quantity, 0)}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Total Qty</p>
+                <p className="text-xl md:text-2xl font-black">{lines.reduce((s, l) => s + l.quantity, 0)}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Grand Total</p>
-                <p className="text-2xl font-black text-primary">UGX {totalAmount.toLocaleString()}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Grand Total</p>
+                <p className="text-lg md:text-2xl font-black text-primary">UGX {totalAmount.toLocaleString()}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-medium">Expected Profit</p>
-                <p className={`text-2xl font-black ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
+                <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Expected Profit</p>
+                <p className={`text-lg md:text-2xl font-black ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
                   UGX {totalProfit.toLocaleString()}
                 </p>
               </div>
@@ -717,15 +740,13 @@ const StockPurchasePage = () => {
           </div>
 
           {/* Save Button */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={resetForm} className="gap-1.5">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button variant="outline" onClick={resetForm} className="gap-1.5 w-full sm:w-auto">
               Clear
-              <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+R</kbd>
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="gap-2 px-8">
+            <Button onClick={handleSave} disabled={saving} className="gap-2 w-full sm:w-auto sm:px-8">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {saving ? "Saving..." : "Save Purchase"}
-              <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+S</kbd>
             </Button>
           </div>
 
@@ -754,21 +775,21 @@ const StockPurchasePage = () => {
                 const items = purchaseItems[purchase.id];
                 return (
                   <div key={purchase.id} className="bg-card rounded-xl border border-border overflow-hidden">
-                    <button className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                    <button className="w-full flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 text-left hover:bg-muted/30 transition-colors gap-2"
                       onClick={() => { setExpandedPurchase(isExpanded ? null : purchase.id); if (!isExpanded) loadPurchaseItems(purchase.id); }}>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="font-semibold text-sm">#{purchase.voucher_number}</span>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-semibold text-xs sm:text-sm">#{purchase.voucher_number}</span>
                           <Badge variant={purchase.status === "approved" ? "default" : "secondary"} className="text-[10px]">{purchase.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                           <span className="font-medium text-foreground">{purchase.party_name || "Unknown"}</span>
                           <span>•</span>
                           <span>{format(new Date(purchase.voucher_date), "dd MMM yyyy")}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-sm">UGX {Number(purchase.total_amount).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="font-bold text-xs sm:text-sm">UGX {Number(purchase.total_amount).toLocaleString()}</span>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={async (e) => {
                           e.stopPropagation();
                           const items = await loadPurchaseItems(purchase.id);
