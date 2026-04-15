@@ -1088,13 +1088,13 @@ const POSPage = () => {
               {filtered.map((p, idx) => (
                 <div
                   key={p.id}
-                  className={`bg-card border rounded-xl p-3 text-left hover:border-primary hover:shadow-sm transition-all group relative ${
+                  className={`bg-card border rounded-xl p-2.5 md:p-3 text-left hover:border-primary hover:shadow-sm transition-all group relative ${
                     idx === selectedProductIndex ? "border-primary ring-2 ring-primary/30" : "border-border"
                   }`}
                 >
                   {/* Alt+N indicator */}
                   {idx < 9 && (
-                    <span className="absolute top-1 right-1 text-[9px] font-mono text-muted-foreground/50">
+                    <span className="absolute top-1 right-1 text-[9px] font-mono text-muted-foreground/50 hidden md:inline">
                       Alt+{idx + 1}
                     </span>
                   )}
