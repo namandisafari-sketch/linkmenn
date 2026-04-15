@@ -71,8 +71,51 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
 
   return (
     <div className="h-screen flex bg-muted/30 overflow-hidden">
-      {/* Sidebar - fixed, does not scroll with content */}
-      <aside className={`${sidebarOpen ? "w-60" : "w-16"} gradient-primary flex flex-col transition-all duration-200 hidden md:flex h-screen shrink-0`}>
+      {/* Mobile sidebar overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+          <aside className="relative w-64 gradient-primary flex flex-col h-full z-10">
+            <div className="p-4 border-b border-primary-foreground/10 flex items-center justify-between shrink-0">
+              <img src={logo} alt="Marvid" className="h-14 brightness-0 invert" />
+              <button onClick={() => setMobileMenuOpen(false)} className="text-primary-foreground/60 hover:text-primary-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <ScrollArea className="flex-1">
+              <nav className="p-3 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      currentPath === item.path
+                        ? "bg-primary-foreground/15 text-primary-foreground"
+                        : "text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">{item.label}</span>
+                  </Link>
+                ))}
+              </nav>
+            </ScrollArea>
+            <div className="p-3 border-t border-primary-foreground/10 shrink-0">
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors w-full"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className={`${sidebarOpen ? "w-60" : "w-16"} gradient-primary flex-col transition-all duration-200 hidden md:flex h-screen shrink-0`}>
         <div className="p-4 border-b border-primary-foreground/10 flex items-center justify-between shrink-0">
           <img src={logo} alt="Marvid" className={`${sidebarOpen ? "h-14" : "h-8"} brightness-0 invert`} />
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-primary-foreground/60 hover:text-primary-foreground">
@@ -111,26 +154,31 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
         </div>
       </aside>
 
-      {/* Main - scrollable content area */}
+      {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-background border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-xl font-bold">{title}</h1>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
-          </div>
+        <header className="bg-background border-b border-border px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-1.5 rounded-lg hover:bg-accent transition-colors">
+              <Menu className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-lg md:text-xl font-bold">{title}</h1>
+              {subtitle && <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
               {isOnline ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               {isOnline ? "Online" : "Offline"}
             </div>
-            <button onClick={toggleFullscreen} className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-accent transition-colors" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            <button onClick={toggleFullscreen} className="hidden sm:flex h-8 w-8 rounded-lg items-center justify-center hover:bg-accent transition-colors" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
               {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </button>
             <ThemeToggle />
             {actions}
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 md:p-6">
           {children}
         </div>
       </main>
