@@ -491,18 +491,16 @@ const StockPurchasePage = () => {
         </div>
       )}
 
-      {/* Header with tabs and shortcuts hint */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex gap-2">
-          <Button variant={!showHistory ? "default" : "outline"} onClick={() => setShowHistory(false)} className="gap-2">
-            <ShoppingCart className="h-4 w-4" /> New Purchase
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex gap-2 flex-1 min-w-0">
+          <Button variant={!showHistory ? "default" : "outline"} size="sm" onClick={() => setShowHistory(false)} className="gap-1.5 text-xs md:text-sm">
+            <ShoppingCart className="h-4 w-4" /> New
           </Button>
-          <Button variant={showHistory ? "default" : "outline"} onClick={() => setShowHistory(true)} className="gap-2">
+          <Button variant={showHistory ? "default" : "outline"} size="sm" onClick={() => setShowHistory(true)} className="gap-1.5 text-xs md:text-sm">
             <History className="h-4 w-4" /> History
-            <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+H</kbd>
           </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(!showShortcuts)} className="gap-1 text-xs text-muted-foreground">
+        <Button variant="ghost" size="sm" onClick={() => setShowShortcuts(!showShortcuts)} className="gap-1 text-xs text-muted-foreground hidden sm:flex">
           <Keyboard className="h-3.5 w-3.5" /> Shortcuts
         </Button>
       </div>
