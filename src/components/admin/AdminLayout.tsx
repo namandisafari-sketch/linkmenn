@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Package, ShoppingBag, FileText, LogOut, Settings,
+  LayoutDashboard, Package, ShoppingBag, FileText, LogOut, Settings, X,
   Menu, ShoppingCart, Users, Eye, BarChart3, History, Pill,
   BookOpen, AlertTriangle, Layers, Truck, PackagePlus,
   Wifi, WifiOff, Maximize, Minimize
@@ -43,6 +43,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
   const location = useLocation();
   const { signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const currentPath = location.pathname;
