@@ -1084,7 +1084,7 @@ const POSPage = () => {
           ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No products found</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
               {filtered.map((p, idx) => (
                 <div
                   key={p.id}
@@ -1196,8 +1196,14 @@ const POSPage = () => {
         </div>
       </div>
 
-      {/* Cart sidebar */}
-      <div className="w-80 bg-card border border-border rounded-xl flex flex-col shrink-0">
+      {/* Cart sidebar - hidden on mobile when viewing products */}
+      <div className={`w-full md:w-80 bg-card border border-border rounded-xl flex flex-col shrink-0 ${mobileView === "products" ? "hidden md:flex" : "flex"} ${mobileView === "cart" ? "flex-1" : ""}`}>
+        {/* Mobile back button */}
+        <div className="md:hidden p-3 border-b border-border">
+          <button onClick={() => setMobileView("products")} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" /> Back to Products
+          </button>
+        </div>
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" /> Cart
