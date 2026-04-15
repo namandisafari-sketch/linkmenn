@@ -530,8 +530,8 @@ const StockPurchasePage = () => {
       {!showHistory ? (
         <>
           {/* Purchase Details Card */}
-          <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-card rounded-xl border border-border p-4 md:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <h3 className="font-semibold flex items-center gap-2 text-base">
                 <ShoppingCart className="h-5 w-5 text-primary" /> Purchase Details
               </h3>
@@ -567,7 +567,7 @@ const StockPurchasePage = () => {
             const sup = suppliers.find(s => s.id === supplierId);
             if (!sup) return null;
             return (
-              <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-6 flex-wrap">
+              <div className="bg-card rounded-xl border border-border p-3 md:p-4 flex items-center gap-4 md:gap-6 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Truck className="h-5 w-5 text-primary" />
