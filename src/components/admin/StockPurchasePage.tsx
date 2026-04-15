@@ -434,19 +434,19 @@ const StockPurchasePage = () => {
     <div className="space-y-4 purchase-form">
       {/* Overdue Notification Banner */}
       {overdueInvoices.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 md:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
             <div>
               <p className="font-semibold text-sm text-destructive">
                 {overdueInvoices.length} Overdue Invoice{overdueInvoices.length > 1 ? "s" : ""}
               </p>
               <p className="text-xs text-muted-foreground">
-                Total overdue: UGX {overdueInvoices.reduce((s, inv) => s + Number(inv.amount_due), 0).toLocaleString()}
+                Total: UGX {overdueInvoices.reduce((s, inv) => s + Number(inv.amount_due), 0).toLocaleString()}
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setShowOverduePanel(!showOverduePanel)} className="gap-1.5 text-destructive border-destructive/30">
+          <Button variant="outline" size="sm" onClick={() => setShowOverduePanel(!showOverduePanel)} className="gap-1.5 text-destructive border-destructive/30 w-full sm:w-auto">
             {showOverduePanel ? "Hide" : "View"} Details
             {showOverduePanel ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </Button>
