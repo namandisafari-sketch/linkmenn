@@ -1040,19 +1040,19 @@ const POSPage = () => {
         </div>
 
         {/* Barcode scanner */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-2 md:mb-3">
           <div className="relative flex-1">
             <ScanBarcode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               ref={barcodeRef}
-              placeholder="Scan barcode or enter product code... (F2)"
+              placeholder="Scan barcode... (F2)"
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleBarcodeScan(); }}
-              className="pl-9 font-mono"
+              className="pl-9 font-mono text-sm"
             />
           </div>
-          <Button variant="secondary" onClick={handleBarcodeScan} disabled={!barcodeInput.trim()}>
+          <Button variant="secondary" size="sm" onClick={handleBarcodeScan} disabled={!barcodeInput.trim()} className="hidden sm:flex">
             <Plus className="h-4 w-4 mr-1" /> Add
           </Button>
         </div>
