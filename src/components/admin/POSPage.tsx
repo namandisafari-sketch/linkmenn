@@ -87,6 +87,7 @@ const POSPage = () => {
   const [tempQty, setTempQty] = useState("");
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(-1);
+  const [mobileView, setMobileView] = useState<"products" | "cart">("products");
   const [qtyBuffer, setQtyBuffer] = useState("");
   const qtyBufferTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAddedIdRef = useRef<string | null>(null);
