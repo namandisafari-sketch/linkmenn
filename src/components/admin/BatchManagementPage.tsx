@@ -144,81 +144,129 @@ const BatchManagementPage = () => {
   const nearExpiry = batches.filter(b => { const d = daysUntilExpiry(b.expiry_date); return d >= 0 && d <= 90; });
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs text-muted-foreground font-semibold">Total Batches</p>
-          <p className="text-2xl font-bold">{batches.length}</p>
+    <div className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+        <div className="bg-card rounded-xl border border-border p-3 md:p-4">
+          <p className="text-[10px] md:text-xs text-muted-foreground font-semibold">Total Batches</p>
+          <p className="text-xl md:text-2xl font-bold">{batches.length}</p>
         </div>
-        <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs text-muted-foreground font-semibold">Total Units</p>
-          <p className="text-2xl font-bold">{batches.reduce((s, b) => s + b.quantity, 0).toLocaleString()}</p>
+        <div className="bg-card rounded-xl border border-border p-3 md:p-4">
+          <p className="text-[10px] md:text-xs text-muted-foreground font-semibold">Total Units</p>
+          <p className="text-xl md:text-2xl font-bold">{batches.reduce((s, b) => s + b.quantity, 0).toLocaleString()}</p>
         </div>
-        <div className="bg-destructive/10 rounded-xl border border-destructive/30 p-4">
-          <p className="text-xs text-destructive font-semibold">Expired</p>
-          <p className="text-2xl font-bold text-destructive">{expired.length}</p>
+        <div className="bg-destructive/10 rounded-xl border border-destructive/30 p-3 md:p-4">
+          <p className="text-[10px] md:text-xs text-destructive font-semibold">Expired</p>
+          <p className="text-xl md:text-2xl font-bold text-destructive">{expired.length}</p>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-950 rounded-xl border border-amber-300 dark:border-amber-700 p-4">
-          <p className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Near Expiry (≤90d)</p>
-          <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{nearExpiry.length}</p>
+        <div className="bg-amber-50 dark:bg-amber-950 rounded-xl border border-amber-300 dark:border-amber-700 p-3 md:p-4">
+          <p className="text-[10px] md:text-xs text-amber-700 dark:text-amber-300 font-semibold">Near Expiry</p>
+          <p className="text-xl md:text-2xl font-bold text-amber-700 dark:text-amber-300">{nearExpiry.length}</p>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search by product or batch..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Button onClick={openAdd} className="gap-2">
+        <Button onClick={openAdd} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" /> Add Batch
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/50 text-left">
-              <th className="px-4 py-3 font-semibold">Product</th>
-              <th className="px-4 py-3 font-semibold">Batch #</th>
-              <th className="px-4 py-3 font-semibold">Mfg Date</th>
-              <th className="px-4 py-3 font-semibold">Expiry</th>
-              <th className="px-4 py-3 font-semibold text-right">Purchase Price</th>
-              <th className="px-4 py-3 font-semibold text-right">MRP</th>
-              <th className="px-4 py-3 font-semibold text-right">Qty</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {loading ? (
-              <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">Loading...</td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">No batches found</td></tr>
-            ) : filtered.map(b => {
-              const days = daysUntilExpiry(b.expiry_date);
-              const rowClass = days < 0 ? "bg-destructive/5" : days <= 90 ? "bg-amber-50/50 dark:bg-amber-950/30" : "";
-              return (
-                <tr key={b.id} className={`hover:bg-muted/30 ${rowClass}`}>
-                  <td className="px-4 py-3 font-medium">{b.product_name}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{b.batch_number || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{b.mfg_date || "—"}</td>
-                  <td className="px-4 py-3 text-xs">{new Date(b.expiry_date).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}</td>
-                  <td className="px-4 py-3 text-right">UGX {b.purchase_price.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right font-bold">UGX {b.mrp.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right font-bold">{b.quantity}</td>
-                  <td className="px-4 py-3">{expiryBadge(b.expiry_date)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b)}><Edit2 className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(b.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  </td>
+      {loading ? (
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No batches found</div>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-left">
+                  <th className="px-4 py-3 font-semibold">Product</th>
+                  <th className="px-4 py-3 font-semibold">Batch #</th>
+                  <th className="px-4 py-3 font-semibold">Mfg Date</th>
+                  <th className="px-4 py-3 font-semibold">Expiry</th>
+                  <th className="px-4 py-3 font-semibold text-right">Purchase Price</th>
+                  <th className="px-4 py-3 font-semibold text-right">MRP</th>
+                  <th className="px-4 py-3 font-semibold text-right">Qty</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.map(b => {
+                  const days = daysUntilExpiry(b.expiry_date);
+                  const rowClass = days < 0 ? "bg-destructive/5" : days <= 90 ? "bg-amber-50/50 dark:bg-amber-950/30" : "";
+                  return (
+                    <tr key={b.id} className={`hover:bg-muted/30 ${rowClass}`}>
+                      <td className="px-4 py-3 font-medium">{b.product_name}</td>
+                      <td className="px-4 py-3 font-mono text-xs">{b.batch_number || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">{b.mfg_date || "—"}</td>
+                      <td className="px-4 py-3 text-xs">{new Date(b.expiry_date).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}</td>
+                      <td className="px-4 py-3 text-right">UGX {b.purchase_price.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right font-bold">UGX {b.mrp.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right font-bold">{b.quantity}</td>
+                      <td className="px-4 py-3">{expiryBadge(b.expiry_date)}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b)}><Edit2 className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(b.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile card grid */}
+          <div className="md:hidden grid grid-cols-1 gap-2.5">
+            {filtered.map(b => {
+              const days = daysUntilExpiry(b.expiry_date);
+              const borderClass = days < 0 ? "border-destructive/40" : days <= 90 ? "border-amber-400/40" : "border-border";
+              const bgClass = days < 0 ? "bg-destructive/5" : days <= 90 ? "bg-amber-50/50 dark:bg-amber-950/30" : "bg-card";
+              return (
+                <div key={b.id} className={`rounded-xl border p-3 ${borderClass} ${bgClass}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{b.product_name}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">{b.batch_number || "No batch #"}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {expiryBadge(b.expiry_date)}
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(b)}><Edit2 className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDelete(b.id)}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+                    <div>
+                      <span className="text-muted-foreground text-[10px]">Expiry</span>
+                      <p className="font-medium">{new Date(b.expiry_date).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-[10px]">Qty</span>
+                      <p className="font-bold">{b.quantity}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-[10px]">MRP</span>
+                      <p className="font-bold">UGX {b.mrp.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  {b.purchase_price > 0 && (
+                    <div className="mt-1.5 text-[10px] text-muted-foreground">
+                      Cost: UGX {b.purchase_price.toLocaleString()} {b.mfg_date ? `· Mfg: ${b.mfg_date}` : ""}
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </>
+      )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">

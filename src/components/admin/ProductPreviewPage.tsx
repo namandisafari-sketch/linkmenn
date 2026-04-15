@@ -52,34 +52,50 @@ const ProductPreviewPage = () => {
 
   const shareToWhatsApp = (p: Product) => {
     const productUrl = `${window.location.origin}/product/${p.id}`;
-    const text = encodeURIComponent(
-      `🏥 *${p.name}*\n\n` +
-      `💊 Unit: ${p.unit}\n` +
-      `💰 Price: UGX ${Number(p.price).toLocaleString()}\n` +
-      `${p.wholesale_price > 0 ? `📦 Wholesale: UGX ${Number(p.wholesale_price).toLocaleString()}\n` : ""}` +
-      `${p.description ? `📋 ${p.description}\n` : ""}` +
-      `${p.stock > 0 ? `✅ In Stock (${p.stock} ${p.unit})` : `❌ Out of Stock`}\n\n` +
-      `${p.image_url ? `📸 ${p.image_url}\n\n` : ""}` +
-      `🔗 View & Order: ${productUrl}\n\n` +
-      `Order now from Marvid Pharmaceutical UG! 📲`
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    const msg = [
+      `*${p.name}*`,
+      ``,
+      `Unit: ${p.unit}`,
+      `Price: UGX ${Number(p.price).toLocaleString()}`,
+      p.wholesale_price > 0 ? `Wholesale: UGX ${Number(p.wholesale_price).toLocaleString()}` : "",
+      p.description || "",
+      p.stock > 0 ? `In Stock (${p.stock} ${p.unit})` : `Out of Stock`,
+      ``,
+      p.image_url || "",
+      `View & Order: ${productUrl}`,
+      ``,
+      `Order now from Marvid Pharmaceutical UG!`,
+    ].filter(Boolean).join("\n");
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
-  const shareToStatus = (p: Product) => {
+  const shareToStatus = async (p: Product) => {
     const productUrl = `${window.location.origin}/product/${p.id}`;
-    const text = encodeURIComponent(
-      `🏥 *AVAILABLE NOW!*\n\n` +
-      `💊 ${p.name}\n` +
-      `💰 UGX ${Number(p.price).toLocaleString()}\n` +
-      `${p.wholesale_price > 0 ? `📦 Wholesale: UGX ${Number(p.wholesale_price).toLocaleString()}\n` : ""}` +
-      `✅ In Stock\n\n` +
-      `${p.image_url ? `📸 ${p.image_url}\n\n` : ""}` +
-      `🔗 ${productUrl}\n\n` +
-      `📞 Order now!\n` +
-      `Marvid Pharmaceutical UG`
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    const msg = [
+      `*AVAILABLE NOW!*`,
+      ``,
+      p.name,
+      `UGX ${Number(p.price).toLocaleString()}`,
+      p.wholesale_price > 0 ? `Wholesale: UGX ${Number(p.wholesale_price).toLocaleString()}` : "",
+      `In Stock`,
+      ``,
+      p.image_url || "",
+      productUrl,
+      ``,
+      `Order now!`,
+      `Marvid Pharmaceutical UG`,
+    ].filter(Boolean).join("\n");
+
+    // Try native share (works on mobile for status)
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: msg });
+        return;
+      } catch {}
+    }
+    // Fallback: copy to clipboard
+    await navigator.clipboard.writeText(msg);
+    toast.success("Copied to clipboard! Paste it in your WhatsApp Status.");
   };
 
   const filtered = products.filter((p) =>
