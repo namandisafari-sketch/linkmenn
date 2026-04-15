@@ -1014,8 +1014,7 @@ const POSPage = () => {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
-      {/* Product grid */}
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100vh-8rem)] relative">
       <div className="flex-1 flex flex-col min-w-0">
         {/* Shortcut hint bar */}
         <div className="flex items-center justify-between mb-2 px-1">
