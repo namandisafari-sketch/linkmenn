@@ -775,21 +775,21 @@ const StockPurchasePage = () => {
                 const items = purchaseItems[purchase.id];
                 return (
                   <div key={purchase.id} className="bg-card rounded-xl border border-border overflow-hidden">
-                    <button className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                    <button className="w-full flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 text-left hover:bg-muted/30 transition-colors gap-2"
                       onClick={() => { setExpandedPurchase(isExpanded ? null : purchase.id); if (!isExpanded) loadPurchaseItems(purchase.id); }}>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="font-semibold text-sm">#{purchase.voucher_number}</span>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-semibold text-xs sm:text-sm">#{purchase.voucher_number}</span>
                           <Badge variant={purchase.status === "approved" ? "default" : "secondary"} className="text-[10px]">{purchase.status}</Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                           <span className="font-medium text-foreground">{purchase.party_name || "Unknown"}</span>
                           <span>•</span>
                           <span>{format(new Date(purchase.voucher_date), "dd MMM yyyy")}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-sm">UGX {Number(purchase.total_amount).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="font-bold text-xs sm:text-sm">UGX {Number(purchase.total_amount).toLocaleString()}</span>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={async (e) => {
                           e.stopPropagation();
                           const items = await loadPurchaseItems(purchase.id);
