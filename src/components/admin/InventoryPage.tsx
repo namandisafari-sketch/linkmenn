@@ -211,17 +211,20 @@ const InventoryPage = () => {
 
   const shareToWhatsApp = (p: Product) => {
     const productUrl = `${window.location.origin}/product/${p.id}`;
-    const text = encodeURIComponent(
-      `🏥 *${p.name}*\n\n` +
-      `💊 Unit: ${p.unit}\n` +
-      `💰 Price: UGX ${Number(p.price).toLocaleString()}\n` +
-      `${p.description ? `📋 ${p.description}\n` : ""}` +
-      `${p.stock > 0 ? `✅ In Stock` : `❌ Out of Stock`}\n\n` +
-      `${p.image_url ? `📸 ${p.image_url}\n\n` : ""}` +
-      `🔗 View & Order: ${productUrl}\n\n` +
-      `Order now! 📲`
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    const msg = [
+      `*${p.name}*`,
+      ``,
+      `Unit: ${p.unit}`,
+      `Price: UGX ${Number(p.price).toLocaleString()}`,
+      p.description ? p.description : "",
+      p.stock > 0 ? `In Stock` : `Out of Stock`,
+      ``,
+      p.image_url ? p.image_url : "",
+      `View & Order: ${productUrl}`,
+      ``,
+      `Order now!`,
+    ].filter(Boolean).join("\n");
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   const daysUntilExpiry = (date: string | null) => {
