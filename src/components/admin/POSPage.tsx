@@ -1057,21 +1057,21 @@ const POSPage = () => {
           </Button>
         </div>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-3 md:mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               ref={searchRef}
-              placeholder="Search products... (F1) ↑↓ to navigate, Enter to add"
+              placeholder="Search products... (F1)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 text-sm"
             />
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-10 px-2 md:px-3 rounded-md border border-input bg-background text-sm max-w-[100px] md:max-w-none"
           >
             <option value="">All</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
