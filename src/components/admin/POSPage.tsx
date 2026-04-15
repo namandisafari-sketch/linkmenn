@@ -1015,9 +1015,10 @@ const POSPage = () => {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100vh-8rem)] relative">
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Shortcut hint bar */}
-        <div className="flex items-center justify-between mb-2 px-1">
+      {/* Product grid - hidden on mobile when viewing cart */}
+      <div className={`flex-1 flex flex-col min-w-0 ${mobileView === "cart" ? "hidden md:flex" : "flex"}`}>
+        {/* Shortcut hint bar - hidden on mobile */}
+        <div className="hidden md:flex items-center justify-between mb-2 px-1">
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono flex-wrap">
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Space</kbd> Search</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Tab</kbd> Navigate</span>
