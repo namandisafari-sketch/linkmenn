@@ -740,15 +740,13 @@ const StockPurchasePage = () => {
           </div>
 
           {/* Save Button */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={resetForm} className="gap-1.5">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button variant="outline" onClick={resetForm} className="gap-1.5 w-full sm:w-auto">
               Clear
-              <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+R</kbd>
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="gap-2 px-8">
+            <Button onClick={handleSave} disabled={saving} className="gap-2 w-full sm:w-auto sm:px-8">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {saving ? "Saving..." : "Save Purchase"}
-              <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+S</kbd>
             </Button>
           </div>
 
