@@ -1817,6 +1817,21 @@ const POSPage = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile floating cart button */}
+      {mobileView === "products" && (
+        <button
+          onClick={() => setMobileView("cart")}
+          className="md:hidden fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 active:scale-95 transition-all"
+        >
+          <ShoppingCart className="h-6 w-6" />
+          {cart.length > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-[11px] flex items-center justify-center font-bold">
+              {cart.length}
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 };
