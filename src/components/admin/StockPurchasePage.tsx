@@ -596,18 +596,18 @@ const StockPurchasePage = () => {
 
           {/* Line Items - Invoice Table Layout */}
           <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-              <h3 className="font-semibold text-base flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
+            <div className="flex items-center justify-between px-3 md:px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm md:text-base flex items-center gap-2">
+                <Package className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 Items ({lines.length})
               </h3>
-              <Button variant="outline" size="sm" onClick={addLine} className="gap-1">
-                <Plus className="h-3.5 w-3.5" /> Add Item
-                <kbd className="hidden sm:inline ml-1 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground border border-border">Alt+N</kbd>
+              <Button variant="outline" size="sm" onClick={addLine} className="gap-1 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Add
               </Button>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -627,45 +627,16 @@ const StockPurchasePage = () => {
                     const lineTotal = line.quantity * line.purchase_price;
                     const isActive = activeLineIdx === idx;
                     return (
-                      <tr
-                        key={idx}
-                        className={`border-b border-border transition-colors cursor-pointer ${isActive ? "bg-primary/5" : "hover:bg-muted/20"}`}
-                        onClick={() => setActiveLineIdx(idx)}
-                      >
+                      <tr key={idx} className={`border-b border-border transition-colors cursor-pointer ${isActive ? "bg-primary/5" : "hover:bg-muted/20"}`} onClick={() => setActiveLineIdx(idx)}>
                         <td className="px-2 py-2 text-center text-xs font-bold text-muted-foreground">{idx + 1}</td>
-                        <td className="px-2 py-1.5">
-                          <SearchableSelect
-                            options={productOptions}
-                            value={line.product_id}
-                            onChange={v => updateLine(idx, "product_id", v)}
-                            placeholder="Search product..."
-                          />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-center w-16" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-xs" placeholder="Batch #" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-right text-xs" />
-                        </td>
-                        <td className="px-2 py-2 text-right font-bold text-xs">
-                          {lineTotal.toLocaleString()}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-right text-xs" />
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                            onClick={(e) => { e.stopPropagation(); removeLine(idx); }}
-                            disabled={lines.length <= 1}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
+                        <td className="px-2 py-1.5"><SearchableSelect options={productOptions} value={line.product_id} onChange={v => updateLine(idx, "product_id", v)} placeholder="Search product..." /></td>
+                        <td className="px-2 py-1.5"><Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-center w-16" /></td>
+                        <td className="px-2 py-1.5"><Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-xs" placeholder="Batch #" /></td>
+                        <td className="px-2 py-1.5"><Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" /></td>
+                        <td className="px-2 py-1.5"><Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-right text-xs" /></td>
+                        <td className="px-2 py-2 text-right font-bold text-xs">{lineTotal.toLocaleString()}</td>
+                        <td className="px-2 py-1.5"><Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-right text-xs" /></td>
+                        <td className="px-2 py-2 text-center"><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); removeLine(idx); }} disabled={lines.length <= 1}><Trash2 className="h-3.5 w-3.5" /></Button></td>
                       </tr>
                     );
                   })}
@@ -687,6 +658,61 @@ const StockPurchasePage = () => {
                   )}
                 </tfoot>
               </table>
+            </div>
+
+            {/* Mobile card layout */}
+            <div className="md:hidden divide-y divide-border">
+              {lines.map((line, idx) => {
+                const lineTotal = line.quantity * line.purchase_price;
+                return (
+                  <div key={idx} className={`p-3 space-y-2.5 ${activeLineIdx === idx ? "bg-primary/5" : ""}`} onClick={() => setActiveLineIdx(idx)}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-muted-foreground">Item #{idx + 1}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); removeLine(idx); }} disabled={lines.length <= 1}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <SearchableSelect options={productOptions} value={line.product_id} onChange={v => updateLine(idx, "product_id", v)} placeholder="Search product..." />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Qty</label>
+                        <Input type="number" min={1} value={line.quantity} onChange={e => updateLine(idx, "quantity", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Batch #</label>
+                        <Input value={line.batch_number} onChange={e => updateLine(idx, "batch_number", e.target.value)} className="h-8 text-sm" placeholder="Batch" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Expiry</label>
+                        <Input type="date" value={line.expiry_date} onChange={e => updateLine(idx, "expiry_date", e.target.value)} className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Buy Price</label>
+                        <Input type="number" min={0} value={line.purchase_price} onChange={e => updateLine(idx, "purchase_price", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground font-medium">Sell Price</label>
+                        <Input type="number" min={0} value={line.selling_price} onChange={e => updateLine(idx, "selling_price", Number(e.target.value))} className="h-8 text-sm" />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-muted-foreground">Amount: </span>
+                      <span className="text-sm font-bold text-primary">UGX {lineTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {totalAmount > 0 && (
+                <div className="p-3 bg-muted/30">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase text-muted-foreground">Total</span>
+                    <span className="text-sm font-bold text-primary">UGX {totalAmount.toLocaleString()}</span>
+                  </div>
+                  <p className="text-[10px] italic text-muted-foreground mt-1">{numberToWords(totalAmount)}</p>
+                </div>
+              )}
             </div>
           </div>
 
