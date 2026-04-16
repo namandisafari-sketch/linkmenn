@@ -263,7 +263,44 @@ const SalesHistoryPage = () => {
   };
 
 
-  return (
+  const deleteSale = async (sale: SaleRecord) => {
+    if (!confirm(`Delete sale #${sale.id.slice(0, 8)} for ${sale.customer_name}? This will restore stock and remove all related records.`)) return;
+    try {
+      // Restore stock for each item
+      for (const item of sale.order_items) {
+        if (item.product_id) {
+          const product = products.find(p => p.id === item.product_id);
+          if (product) {
+            await supabase.from("products").update({ stock: (product as any).stock + item.quantity } as any).eq("id", item.product_id);
+          }
+        }
+      }
+      // Delete related records
+      await supabase.from("order_prescriptions").delete().eq("order_id", sale.id);
+      await supabase.from("order_items").delete().eq("order_id", sale.id);
+      await supabase.from("credit_transactions").delete().eq("order_id", sale.id);
+      // Delete voucher and ledger entries
+      const { data: voucher } = await supabase.from("vouchers").select("id").eq("reference_id", sale.id).maybeSingle();
+      if (voucher) {
+        await supabase.from("general_ledger").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("voucher_items").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("vouchers").delete().eq("id", (voucher as any).id);
+      }
+      await supabase.from("orders").delete().eq("id", sale.id);
+      toast.success(`Sale #${sale.id.slice(0, 8)} deleted and stock restored`);
+      fetchSales();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete sale");
+    }
+  };
+
+  const editSaleInPOS = (sale: SaleRecord) => {
+    // Store sale data in sessionStorage so POS can pick it up
+    sessionStorage.setItem("pos_edit_sale", JSON.stringify(sale));
+    navigate("/admin/pos");
+  };
+
+
     <div className="space-y-6">
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
