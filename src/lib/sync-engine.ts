@@ -1,5 +1,9 @@
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import { getPendingActions, clearPendingAction, getPendingCount } from "./offline-db";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const rawClient = createClient(supabaseUrl, supabaseKey);
 
 type SyncListener = (pending: number) => void;
 const listeners = new Set<SyncListener>();
