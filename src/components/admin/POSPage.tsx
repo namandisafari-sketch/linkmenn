@@ -1325,6 +1325,7 @@ const POSPage = () => {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" /> Cart
+            {editingSaleId && <Badge variant="destructive" className="text-[9px]">Editing</Badge>}
           </h3>
           <div className="flex items-center gap-2">
             {qtyBuffer && (
@@ -1332,17 +1333,44 @@ const POSPage = () => {
                 Qty: {qtyBuffer}
               </span>
             )}
+            {cart.length > 0 && (
+              <button onClick={holdCurrentReceipt} className="text-muted-foreground hover:text-primary" title="Hold receipt (Ctrl+S / H)">
+                <PauseCircle className="h-4 w-4" />
+              </button>
+            )}
             <Badge variant={customerType === "wholesale" ? "default" : "secondary"} className="text-[10px] cursor-pointer" onClick={() => setCustomerType(customerType === "retail" ? "wholesale" : "retail")}>
               {customerType === "wholesale" ? "Wholesale" : "Retail"}
             </Badge>
             <Badge variant="secondary">{cart.length}</Badge>
             {cart.length > 0 && (
-              <button onClick={() => { setCart([]); toast.success("Cart cleared"); }} className="text-muted-foreground hover:text-destructive" title="Clear cart (F3)">
+              <button onClick={() => { setCart([]); setEditingSaleId(null); toast.success("Cart cleared"); }} className="text-muted-foreground hover:text-destructive" title="Clear cart (F3)">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         </div>
+
+        {/* Held Receipts Bar */}
+        {heldReceipts.length > 0 && (
+          <div className="px-3 py-2 border-b border-border bg-muted/30 space-y-1.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <PauseCircle className="h-3 w-3" /> {heldReceipts.length} held receipt{heldReceipts.length > 1 ? "s" : ""}
+            </p>
+            <div className="flex gap-1.5 flex-wrap">
+              {heldReceipts.map((h) => (
+                <button
+                  key={h.id}
+                  onClick={() => resumeHeldReceipt(h.id)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors border border-primary/20"
+                >
+                  <PlayCircle className="h-3 w-3" />
+                  <span className="truncate max-w-[80px]">{h.label}</span>
+                  <Badge variant="secondary" className="text-[9px] px-1">{h.cart.length}</Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-auto p-3 space-y-2">
           {cart.length === 0 ? (
