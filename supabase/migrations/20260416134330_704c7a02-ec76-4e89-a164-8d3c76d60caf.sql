@@ -1,0 +1,1 @@
+ALTER TABLE public.tally_vouchers ADD COLUMN guid TEXT;
