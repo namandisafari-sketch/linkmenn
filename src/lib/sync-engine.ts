@@ -24,13 +24,14 @@ export const syncPendingActions = async (): Promise<{ synced: number; failed: nu
       const { table, action: op, data } = action;
       let result;
 
+      const tbl = supabase.from(table as any);
       if (op === "insert") {
-        result = await (supabase.from(table) as any).insert(data);
+        result = await tbl.insert(data as any);
       } else if (op === "update") {
         const { id, ...rest } = data;
-        result = await (supabase.from(table) as any).update(rest).eq("id", id);
+        result = await tbl.update(rest as any).eq("id" as any, id);
       } else if (op === "delete") {
-        result = await (supabase.from(table) as any).delete().eq("id", data.id);
+        result = await tbl.delete().eq("id" as any, data.id);
       }
 
       if (result?.error) throw result.error;

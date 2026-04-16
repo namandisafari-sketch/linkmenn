@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/marvid-logo.png";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import AdminAIAssistant from "@/components/admin/AdminAIAssistant";
+import SyncStatusBadge from "@/components/admin/SyncStatusBadge";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin", shortcut: "1" },
