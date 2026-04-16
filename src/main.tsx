@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { initSyncEngine } from "./lib/sync-engine";
+
+initSyncEngine();
 
 // Guard: never register service worker in iframe or preview hosts
 const isInIframe = (() => {

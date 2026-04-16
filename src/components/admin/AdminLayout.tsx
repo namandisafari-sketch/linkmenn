@@ -6,7 +6,7 @@ import {
   BookOpen, AlertTriangle, Layers, Truck, PackagePlus,
   Wifi, WifiOff, Maximize, Minimize
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// Button not needed in layout
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/marvid-logo.png";
 import ThemeToggle from "@/components/ThemeToggle";
