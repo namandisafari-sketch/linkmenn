@@ -403,14 +403,32 @@ const SalesHistoryPage = () => {
                               </div>
                             ))}
                             {s.notes && <p className="text-[10px] text-muted-foreground italic mt-1">📝 {s.notes}</p>}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full mt-3 gap-2 text-xs"
-                              onClick={(e) => { e.stopPropagation(); reprintReceipt(s); }}
-                            >
-                              <Printer className="h-3.5 w-3.5" /> Reprint Receipt
-                            </Button>
+                            <div className="flex gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); reprintReceipt(s); }}
+                              >
+                                <Printer className="h-3.5 w-3.5" /> Reprint
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); editSaleInPOS(s); }}
+                              >
+                                <Edit3 className="h-3.5 w-3.5" /> Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); deleteSale(s); }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>
