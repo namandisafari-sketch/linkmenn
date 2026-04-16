@@ -6,11 +6,13 @@ import {
   BookOpen, AlertTriangle, Layers, Truck, PackagePlus,
   Wifi, WifiOff, Maximize, Minimize
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// Button not needed in layout
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/marvid-logo.png";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import AdminAIAssistant from "@/components/admin/AdminAIAssistant";
+import SyncStatusBadge from "@/components/admin/SyncStatusBadge";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin", shortcut: "1" },
@@ -168,6 +170,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
             </div>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
+            <SyncStatusBadge />
             <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
               {isOnline ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               {isOnline ? "Online" : "Offline"}
@@ -183,6 +186,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
           {children}
         </div>
       </main>
+      <AdminAIAssistant />
     </div>
   );
 };

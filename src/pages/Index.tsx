@@ -9,7 +9,7 @@ import ResearchSection from "@/components/ResearchSection";
 import CSRSection from "@/components/CSRSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import ChatBubble from "@/components/ChatBubble";
+// ChatBubble removed from public pages - AI assistant is only on admin pages
 
 const isPWA = () => {
   return (
@@ -45,7 +45,6 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
-      <ChatBubble />
     </div>
   );
 };
