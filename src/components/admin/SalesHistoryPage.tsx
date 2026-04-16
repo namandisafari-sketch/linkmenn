@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Search, Calendar, DollarSign, TrendingUp, ShoppingBag,
-  User, Clock, Filter, Printer, Receipt, RotateCcw
+  User, Clock, Filter, Printer, Receipt, RotateCcw, Trash2, Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface SaleRecord {
   id: string;
@@ -24,9 +26,11 @@ interface SaleRecord {
 interface Product {
   id: string;
   name: string;
+  stock?: number;
 }
 
 const SalesHistoryPage = () => {
+  const navigate = useNavigate();
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +52,7 @@ const SalesHistoryPage = () => {
         .gte("created_at", dateFrom + "T00:00:00")
         .lte("created_at", dateTo + "T23:59:59")
         .order("created_at", { ascending: false }),
-      supabase.from("products").select("id, name"),
+      supabase.from("products").select("id, name, stock"),
     ]);
     setSales((orders as SaleRecord[]) || []);
     setProducts(prods || []);
@@ -260,6 +264,43 @@ const SalesHistoryPage = () => {
   };
 
 
+  const deleteSale = async (sale: SaleRecord) => {
+    if (!confirm(`Delete sale #${sale.id.slice(0, 8)} for ${sale.customer_name}? This will restore stock and remove all related records.`)) return;
+    try {
+      // Restore stock for each item
+      for (const item of sale.order_items) {
+        if (item.product_id) {
+          const { data: prod } = await supabase.from("products").select("stock").eq("id", item.product_id).maybeSingle();
+          if (prod) {
+            await supabase.from("products").update({ stock: (prod as any).stock + item.quantity } as any).eq("id", item.product_id);
+          }
+        }
+      }
+      // Delete related records
+      await supabase.from("order_prescriptions").delete().eq("order_id", sale.id);
+      await supabase.from("order_items").delete().eq("order_id", sale.id);
+      await supabase.from("credit_transactions").delete().eq("order_id", sale.id);
+      // Delete voucher and ledger entries
+      const { data: voucher } = await supabase.from("vouchers").select("id").eq("reference_id", sale.id).maybeSingle();
+      if (voucher) {
+        await supabase.from("general_ledger").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("voucher_items").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("vouchers").delete().eq("id", (voucher as any).id);
+      }
+      await supabase.from("orders").delete().eq("id", sale.id);
+      toast.success(`Sale #${sale.id.slice(0, 8)} deleted and stock restored`);
+      fetchSales();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete sale");
+    }
+  };
+
+  const editSaleInPOS = (sale: SaleRecord) => {
+    // Store sale data in sessionStorage so POS can pick it up
+    sessionStorage.setItem("pos_edit_sale", JSON.stringify(sale));
+    navigate("/admin/pos");
+  };
+
   return (
     <div className="space-y-6">
       {/* Summary */}
@@ -363,14 +404,32 @@ const SalesHistoryPage = () => {
                               </div>
                             ))}
                             {s.notes && <p className="text-[10px] text-muted-foreground italic mt-1">📝 {s.notes}</p>}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full mt-3 gap-2 text-xs"
-                              onClick={(e) => { e.stopPropagation(); reprintReceipt(s); }}
-                            >
-                              <Printer className="h-3.5 w-3.5" /> Reprint Receipt
-                            </Button>
+                            <div className="flex gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); reprintReceipt(s); }}
+                              >
+                                <Printer className="h-3.5 w-3.5" /> Reprint
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); editSaleInPOS(s); }}
+                              >
+                                <Edit3 className="h-3.5 w-3.5" /> Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="gap-1.5 text-xs"
+                                onClick={(e) => { e.stopPropagation(); deleteSale(s); }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>

@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Printer, X, User, ScanBarcode, Wallet, Edit3, CalendarIcon, Pill, Keyboard, History
+  Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Printer, X, User, ScanBarcode, Wallet, Edit3, CalendarIcon, Pill, Keyboard, History, PauseCircle, PlayCircle
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -68,8 +69,21 @@ const DISTRICTS = [
   "Mbale", "Fort Portal", "Masaka", "Entebbe", "Arua", "Soroti", "Kabale",
 ];
 
+interface HeldReceipt {
+  id: string;
+  label: string;
+  cart: CartItem[];
+  customer: {
+    name: string; phone: string; address: string; district: string;
+    payment_method: string; payment_phone: string; notes: string;
+  };
+  customerType: "retail" | "wholesale";
+  timestamp: number;
+}
+
 const POSPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +132,42 @@ const POSPage = () => {
     name: "", phone: "", address: "", district: "Kampala",
     payment_method: "cash", payment_phone: "", notes: "",
   });
+
+  // Held receipts (park/resume)
+  const [heldReceipts, setHeldReceipts] = useState<HeldReceipt[]>([]);
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
+
+  // Pick up edit from sales history
+  useEffect(() => {
+    const raw = sessionStorage.getItem("pos_edit_sale");
+    if (raw) {
+      sessionStorage.removeItem("pos_edit_sale");
+      try {
+        const sale = JSON.parse(raw);
+        setEditingSaleId(sale.id);
+        setCustomer({
+          name: sale.customer_name, phone: sale.phone,
+          address: sale.address || "", district: sale.district || "Kampala",
+          payment_method: sale.payment_method || "cash", payment_phone: "", notes: sale.notes || "",
+        });
+        const loadItems = async () => {
+          const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name");
+          const allProducts = (prods as Product[]) || [];
+          setProducts(allProducts);
+          const cartItems: CartItem[] = [];
+          for (const item of sale.order_items) {
+            const prod = allProducts.find((p: Product) => p.id === item.product_id);
+            if (prod) {
+              cartItems.push({ product: prod, quantity: item.quantity, customPrice: item.unit_price !== prod.price ? item.unit_price : null, sellingUnit: null });
+            }
+          }
+          setCart(cartItems);
+          toast.info(`Editing sale #${sale.id.slice(0, 8)} — make changes and complete to save`);
+        };
+        loadItems();
+      } catch {}
+    }
+  }, []);
 
   interface PrescriptionRule {
     id: string; product_id: string; disease: string; symptoms: string | null;
@@ -345,7 +395,49 @@ const POSPage = () => {
   const amountDue = total - creditToApply;
   const isBackdated = saleDate !== new Date().toISOString().split("T")[0];
 
-  // Helper: add to cart and track last added
+  // Hold/Park current receipt
+  const holdCurrentReceipt = useCallback(() => {
+    if (cart.length === 0) { toast.error("Cart is empty — nothing to hold"); return; }
+    const held: HeldReceipt = {
+      id: crypto.randomUUID(),
+      label: customer.name || `Receipt ${heldReceipts.length + 1}`,
+      cart: [...cart],
+      customer: { ...customer },
+      customerType,
+      timestamp: Date.now(),
+    };
+    setHeldReceipts(prev => [...prev, held]);
+    setCart([]);
+    setCustomer({ name: "", phone: "", address: "", district: "Kampala", payment_method: "cash", payment_phone: "", notes: "" });
+    setSelectedCreditBalance(null);
+    setCustomerType("retail");
+    toast.success(`Receipt held — ${held.label}`);
+  }, [cart, customer, customerType, heldReceipts.length]);
+
+  const resumeHeldReceipt = useCallback((id: string) => {
+    const held = heldReceipts.find(h => h.id === id);
+    if (!held) return;
+    // If current cart has items, hold it first
+    if (cart.length > 0) {
+      const currentHeld: HeldReceipt = {
+        id: crypto.randomUUID(),
+        label: customer.name || `Receipt`,
+        cart: [...cart],
+        customer: { ...customer },
+        customerType,
+        timestamp: Date.now(),
+      };
+      setHeldReceipts(prev => [...prev.filter(h => h.id !== id), currentHeld]);
+    } else {
+      setHeldReceipts(prev => prev.filter(h => h.id !== id));
+    }
+    setCart(held.cart);
+    setCustomer(held.customer);
+    setCustomerType(held.customerType);
+    toast.success(`Resumed — ${held.label}`);
+  }, [cart, customer, customerType, heldReceipts]);
+
+
   const addToCartTracked = useCallback((product: Product, qty: number = 1) => {
     addToCart(product, qty);
     lastAddedIdRef.current = product.id;
@@ -362,6 +454,12 @@ const POSPage = () => {
       if (e.key === "F1") {
         e.preventDefault();
         searchRef.current?.focus();
+        return;
+      }
+      // Ctrl+S - Hold current receipt (save for later)
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        holdCurrentReceipt();
         return;
       }
       // F2 - Focus barcode
@@ -459,6 +557,26 @@ const POSPage = () => {
 
       // === SPEED MODE: When not in any input field ===
       if (!isInput && !checkoutOpen) {
+        // S - Go to Sales History
+        if (e.key === "s" || e.key === "S") {
+          e.preventDefault();
+          navigate("/admin/sales-history");
+          return;
+        }
+        // H - Hold current receipt
+        if (e.key === "h" || e.key === "H") {
+          e.preventDefault();
+          holdCurrentReceipt();
+          return;
+        }
+        // R + number - Resume held receipt
+        if (e.key === "r" || e.key === "R") {
+          if (heldReceipts.length === 1) {
+            e.preventDefault();
+            resumeHeldReceipt(heldReceipts[0].id);
+          }
+          return;
+        }
         // Space - Focus search
         if (e.key === " ") {
           e.preventDefault();
@@ -584,7 +702,7 @@ const POSPage = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cart, checkoutOpen, submitting, customer, filtered, selectedProductIndex, showShortcuts, editingPriceId, editingQtyId, customerType, addToCartTracked, qtyBuffer, pastReceiptsOpen]);
+  }, [cart, checkoutOpen, submitting, customer, filtered, selectedProductIndex, showShortcuts, editingPriceId, editingQtyId, customerType, addToCartTracked, qtyBuffer, pastReceiptsOpen, holdCurrentReceipt, resumeHeldReceipt, heldReceipts, navigate]);
 
   const loadPastReceipt = async (orderId: string) => {
     const { data: orderItems } = await supabase
@@ -1020,15 +1138,13 @@ const POSPage = () => {
         {/* Shortcut hint bar - hidden on mobile */}
         <div className="hidden md:flex items-center justify-between mb-2 px-1">
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono flex-wrap">
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Ctrl+S</kbd> Hold</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">H</kbd> Hold</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">R</kbd> Resume</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">S</kbd> Sales History</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Space</kbd> Search</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Tab</kbd> Navigate</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Enter</kbd> Add/Checkout</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">0-9</kbd> Set Qty</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">P</kbd> Add by Piece</span>
+            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F8</kbd> Checkout</span>
             <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F4</kbd> Wholesale</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F5</kbd> Reprint</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">Alt+Space</kbd> Past Receipts</span>
-            <span><kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[10px]">F12</kbd> Custom Price</span>
           </div>
           <button
             onClick={() => setShowShortcuts(true)}
@@ -1207,6 +1323,7 @@ const POSPage = () => {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" /> Cart
+            {editingSaleId && <Badge variant="destructive" className="text-[9px]">Editing</Badge>}
           </h3>
           <div className="flex items-center gap-2">
             {qtyBuffer && (
@@ -1214,17 +1331,44 @@ const POSPage = () => {
                 Qty: {qtyBuffer}
               </span>
             )}
+            {cart.length > 0 && (
+              <button onClick={holdCurrentReceipt} className="text-muted-foreground hover:text-primary" title="Hold receipt (Ctrl+S / H)">
+                <PauseCircle className="h-4 w-4" />
+              </button>
+            )}
             <Badge variant={customerType === "wholesale" ? "default" : "secondary"} className="text-[10px] cursor-pointer" onClick={() => setCustomerType(customerType === "retail" ? "wholesale" : "retail")}>
               {customerType === "wholesale" ? "Wholesale" : "Retail"}
             </Badge>
             <Badge variant="secondary">{cart.length}</Badge>
             {cart.length > 0 && (
-              <button onClick={() => { setCart([]); toast.success("Cart cleared"); }} className="text-muted-foreground hover:text-destructive" title="Clear cart (F3)">
+              <button onClick={() => { setCart([]); setEditingSaleId(null); toast.success("Cart cleared"); }} className="text-muted-foreground hover:text-destructive" title="Clear cart (F3)">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         </div>
+
+        {/* Held Receipts Bar */}
+        {heldReceipts.length > 0 && (
+          <div className="px-3 py-2 border-b border-border bg-muted/30 space-y-1.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <PauseCircle className="h-3 w-3" /> {heldReceipts.length} held receipt{heldReceipts.length > 1 ? "s" : ""}
+            </p>
+            <div className="flex gap-1.5 flex-wrap">
+              {heldReceipts.map((h) => (
+                <button
+                  key={h.id}
+                  onClick={() => resumeHeldReceipt(h.id)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors border border-primary/20"
+                >
+                  <PlayCircle className="h-3 w-3" />
+                  <span className="truncate max-w-[80px]">{h.label}</span>
+                  <Badge variant="secondary" className="text-[9px] px-1">{h.cart.length}</Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-auto p-3 space-y-2">
           {cart.length === 0 ? (
@@ -1785,6 +1929,9 @@ const POSPage = () => {
             </div>
             <div className="space-y-1 text-sm">
               {[
+                ["Ctrl+S / H", "Hold current receipt (pause)"],
+                ["R", "Resume held receipt"],
+                ["S", "Go to Sales History"],
                 ["Space", "Focus search (speed mode)"],
                 ["Tab / Shift+Tab", "Navigate products"],
                 ["Enter", "Add selected / Open checkout"],
