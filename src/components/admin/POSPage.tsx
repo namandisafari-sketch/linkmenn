@@ -557,6 +557,26 @@ const POSPage = () => {
 
       // === SPEED MODE: When not in any input field ===
       if (!isInput && !checkoutOpen) {
+        // S - Go to Sales History
+        if (e.key === "s" || e.key === "S") {
+          e.preventDefault();
+          navigate("/admin/sales-history");
+          return;
+        }
+        // H - Hold current receipt
+        if (e.key === "h" || e.key === "H") {
+          e.preventDefault();
+          holdCurrentReceipt();
+          return;
+        }
+        // R + number - Resume held receipt
+        if (e.key === "r" || e.key === "R") {
+          if (heldReceipts.length === 1) {
+            e.preventDefault();
+            resumeHeldReceipt(heldReceipts[0].id);
+          }
+          return;
+        }
         // Space - Focus search
         if (e.key === " ") {
           e.preventDefault();
