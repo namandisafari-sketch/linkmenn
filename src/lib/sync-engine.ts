@@ -28,8 +28,7 @@ export const syncPendingActions = async (): Promise<{ synced: number; failed: nu
       const { table, action: op, data } = action;
       let result;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tbl: any = supabase.from(table);
+      const tbl = rawClient.from(table);
       if (op === "insert") {
         result = await tbl.insert(data);
       } else if (op === "update") {
