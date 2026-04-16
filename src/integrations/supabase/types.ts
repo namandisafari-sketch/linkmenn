@@ -643,6 +643,107 @@ export type Database = {
           },
         ]
       }
+      purchase_order_items: {
+        Row: {
+          amount: number | null
+          created_at: string
+          id: string
+          product_id: string | null
+          product_name: string | null
+          purchase_order_id: string
+          quantity: number | null
+          unit_price: number | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name?: string | null
+          purchase_order_id: string
+          quantity?: number | null
+          unit_price?: number | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name?: string | null
+          purchase_order_id?: string
+          quantity?: number | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          amount_due: number | null
+          amount_paid: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          order_date: string | null
+          status: string | null
+          supplier_id: string | null
+          supplier_name: string | null
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_due?: number | null
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number | null
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -695,12 +796,14 @@ export type Database = {
           items: Json | null
           notes: string | null
           party_name: string | null
+          reference: string | null
           status: string | null
           total_amount: number | null
           updated_at: string
           voucher_date: string | null
           voucher_number: string | null
           voucher_type: string | null
+          year: number | null
         }
         Insert: {
           amount_due?: number | null
@@ -711,12 +814,14 @@ export type Database = {
           items?: Json | null
           notes?: string | null
           party_name?: string | null
+          reference?: string | null
           status?: string | null
           total_amount?: number | null
           updated_at?: string
           voucher_date?: string | null
           voucher_number?: string | null
           voucher_type?: string | null
+          year?: number | null
         }
         Update: {
           amount_due?: number | null
@@ -727,12 +832,14 @@ export type Database = {
           items?: Json | null
           notes?: string | null
           party_name?: string | null
+          reference?: string | null
           status?: string | null
           total_amount?: number | null
           updated_at?: string
           voucher_date?: string | null
           voucher_number?: string | null
           voucher_type?: string | null
+          year?: number | null
         }
         Relationships: []
       }
@@ -753,6 +860,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      voucher_items: {
+        Row: {
+          amount: number | null
+          created_at: string
+          id: string
+          product_id: string | null
+          product_name: string | null
+          quantity: number | null
+          unit_price: number | null
+          voucher_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          unit_price?: number | null
+          voucher_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          unit_price?: number | null
+          voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voucher_items_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vouchers: {
         Row: {
