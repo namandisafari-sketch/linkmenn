@@ -792,6 +792,7 @@ export type Database = {
           amount_paid: number | null
           created_at: string
           created_by: string | null
+          guid: string | null
           id: string
           items: Json | null
           notes: string | null
@@ -810,6 +811,7 @@ export type Database = {
           amount_paid?: number | null
           created_at?: string
           created_by?: string | null
+          guid?: string | null
           id?: string
           items?: Json | null
           notes?: string | null
@@ -828,6 +830,7 @@ export type Database = {
           amount_paid?: number | null
           created_at?: string
           created_by?: string | null
+          guid?: string | null
           id?: string
           items?: Json | null
           notes?: string | null
