@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Printer, X, User, ScanBarcode, Wallet, Edit3, CalendarIcon, Pill, Keyboard, History
+  Search, Plus, Minus, Trash2, ShoppingCart, CreditCard, Printer, X, User, ScanBarcode, Wallet, Edit3, CalendarIcon, Pill, Keyboard, History, PauseCircle, PlayCircle
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
