@@ -288,6 +288,47 @@ export type Database = {
           },
         ]
       }
+      order_prescriptions: {
+        Row: {
+          created_at: string
+          customer_age: number | null
+          customer_name: string | null
+          doctor_name: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          prescription_image: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_age?: number | null
+          customer_name?: string | null
+          doctor_name?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          prescription_image?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_age?: number | null
+          customer_name?: string | null
+          doctor_name?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          prescription_image?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_prescriptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string | null
@@ -341,6 +382,56 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      prescription_rules: {
+        Row: {
+          age_max: number | null
+          age_min: number | null
+          created_at: string
+          disease: string | null
+          dosage: string | null
+          id: string
+          instructions: string | null
+          product_id: string | null
+          symptoms: string | null
+          timing_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_max?: number | null
+          age_min?: number | null
+          created_at?: string
+          disease?: string | null
+          dosage?: string | null
+          id?: string
+          instructions?: string | null
+          product_id?: string | null
+          symptoms?: string | null
+          timing_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_max?: number | null
+          age_min?: number | null
+          created_at?: string
+          disease?: string | null
+          dosage?: string | null
+          id?: string
+          instructions?: string | null
+          product_id?: string | null
+          symptoms?: string | null
+          timing_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescription_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_batches: {
         Row: {
@@ -591,6 +682,57 @@ export type Database = {
           payment_terms?: string | null
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tally_vouchers: {
+        Row: {
+          amount_due: number | null
+          amount_paid: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          items: Json | null
+          notes: string | null
+          party_name: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string
+          voucher_date: string | null
+          voucher_number: string | null
+          voucher_type: string | null
+        }
+        Insert: {
+          amount_due?: number | null
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          party_name?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          voucher_date?: string | null
+          voucher_number?: string | null
+          voucher_type?: string | null
+        }
+        Update: {
+          amount_due?: number | null
+          amount_paid?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          party_name?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          voucher_date?: string | null
+          voucher_number?: string | null
+          voucher_type?: string | null
         }
         Relationships: []
       }
