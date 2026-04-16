@@ -1929,6 +1929,9 @@ const POSPage = () => {
             </div>
             <div className="space-y-1 text-sm">
               {[
+                ["Ctrl+S / H", "Hold current receipt (pause)"],
+                ["R", "Resume held receipt"],
+                ["S", "Go to Sales History"],
                 ["Space", "Focus search (speed mode)"],
                 ["Tab / Shift+Tab", "Navigate products"],
                 ["Enter", "Add selected / Open checkout"],
