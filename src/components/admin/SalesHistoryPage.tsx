@@ -52,7 +52,7 @@ const SalesHistoryPage = () => {
         .gte("created_at", dateFrom + "T00:00:00")
         .lte("created_at", dateTo + "T23:59:59")
         .order("created_at", { ascending: false }),
-      supabase.from("products").select("id, name"),
+      supabase.from("products").select("id, name, stock"),
     ]);
     setSales((orders as SaleRecord[]) || []);
     setProducts(prods || []);
