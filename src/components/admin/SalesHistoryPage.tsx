@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Search, Calendar, DollarSign, TrendingUp, ShoppingBag,
-  User, Clock, Filter, Printer, Receipt, RotateCcw
+  User, Clock, Filter, Printer, Receipt, RotateCcw, Trash2, Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface SaleRecord {
   id: string;
@@ -27,6 +29,7 @@ interface Product {
 }
 
 const SalesHistoryPage = () => {
+  const navigate = useNavigate();
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
