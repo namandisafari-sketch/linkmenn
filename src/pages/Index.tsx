@@ -45,7 +45,6 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
-      <ChatBubble />
     </div>
   );
 };
