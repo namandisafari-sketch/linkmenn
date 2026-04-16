@@ -456,6 +456,12 @@ const POSPage = () => {
         searchRef.current?.focus();
         return;
       }
+      // Ctrl+S - Hold current receipt (save for later)
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        holdCurrentReceipt();
+        return;
+      }
       // F2 - Focus barcode
       if (e.key === "F2") {
         e.preventDefault();
