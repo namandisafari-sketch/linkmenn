@@ -69,8 +69,21 @@ const DISTRICTS = [
   "Mbale", "Fort Portal", "Masaka", "Entebbe", "Arua", "Soroti", "Kabale",
 ];
 
+interface HeldReceipt {
+  id: string;
+  label: string;
+  cart: CartItem[];
+  customer: typeof POSPage extends never ? never : {
+    name: string; phone: string; address: string; district: string;
+    payment_method: string; payment_phone: string; notes: string;
+  };
+  customerType: "retail" | "wholesale";
+  timestamp: number;
+}
+
 const POSPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
