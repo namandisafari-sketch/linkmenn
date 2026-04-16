@@ -702,7 +702,7 @@ const POSPage = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cart, checkoutOpen, submitting, customer, filtered, selectedProductIndex, showShortcuts, editingPriceId, editingQtyId, customerType, addToCartTracked, qtyBuffer, pastReceiptsOpen]);
+  }, [cart, checkoutOpen, submitting, customer, filtered, selectedProductIndex, showShortcuts, editingPriceId, editingQtyId, customerType, addToCartTracked, qtyBuffer, pastReceiptsOpen, holdCurrentReceipt, resumeHeldReceipt, heldReceipts, navigate]);
 
   const loadPastReceipt = async (orderId: string) => {
     const { data: orderItems } = await supabase
