@@ -133,6 +133,42 @@ const POSPage = () => {
     payment_method: "cash", payment_phone: "", notes: "",
   });
 
+  // Held receipts (park/resume)
+  const [heldReceipts, setHeldReceipts] = useState<HeldReceipt[]>([]);
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
+
+  // Pick up edit from sales history
+  useEffect(() => {
+    const raw = sessionStorage.getItem("pos_edit_sale");
+    if (raw) {
+      sessionStorage.removeItem("pos_edit_sale");
+      try {
+        const sale = JSON.parse(raw);
+        setEditingSaleId(sale.id);
+        setCustomer({
+          name: sale.customer_name, phone: sale.phone,
+          address: sale.address || "", district: sale.district || "Kampala",
+          payment_method: sale.payment_method || "cash", payment_phone: "", notes: sale.notes || "",
+        });
+        const loadItems = async () => {
+          const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name");
+          const allProducts = (prods as Product[]) || [];
+          setProducts(allProducts);
+          const cartItems: CartItem[] = [];
+          for (const item of sale.order_items) {
+            const prod = allProducts.find((p: Product) => p.id === item.product_id);
+            if (prod) {
+              cartItems.push({ product: prod, quantity: item.quantity, customPrice: item.unit_price !== prod.price ? item.unit_price : null, sellingUnit: null });
+            }
+          }
+          setCart(cartItems);
+          toast.info(`Editing sale #${sale.id.slice(0, 8)} — make changes and complete to save`);
+        };
+        loadItems();
+      } catch {}
+    }
+  }, []);
+
   interface PrescriptionRule {
     id: string; product_id: string; disease: string; symptoms: string | null;
     dosage: string; instructions: string | null; timing_notes: string | null;
