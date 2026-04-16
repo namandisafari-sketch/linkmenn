@@ -170,6 +170,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
             </div>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
+            <SyncStatusBadge />
             <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
               {isOnline ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               {isOnline ? "Online" : "Offline"}
