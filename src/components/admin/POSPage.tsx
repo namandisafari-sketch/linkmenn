@@ -73,7 +73,7 @@ interface HeldReceipt {
   id: string;
   label: string;
   cart: CartItem[];
-  customer: typeof POSPage extends never ? never : {
+  customer: {
     name: string; phone: string; address: string; district: string;
     payment_method: string; payment_phone: string; notes: string;
   };
