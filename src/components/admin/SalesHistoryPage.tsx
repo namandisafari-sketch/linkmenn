@@ -270,9 +270,9 @@ const SalesHistoryPage = () => {
       // Restore stock for each item
       for (const item of sale.order_items) {
         if (item.product_id) {
-          const product = products.find(p => p.id === item.product_id);
-          if (product) {
-            await supabase.from("products").update({ stock: (product as any).stock + item.quantity } as any).eq("id", item.product_id);
+          const { data: prod } = await supabase.from("products").select("stock").eq("id", item.product_id).maybeSingle();
+          if (prod) {
+            await supabase.from("products").update({ stock: (prod as any).stock + item.quantity } as any).eq("id", item.product_id);
           }
         }
       }
