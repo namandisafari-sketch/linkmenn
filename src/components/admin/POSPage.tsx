@@ -395,7 +395,49 @@ const POSPage = () => {
   const amountDue = total - creditToApply;
   const isBackdated = saleDate !== new Date().toISOString().split("T")[0];
 
-  // Helper: add to cart and track last added
+  // Hold/Park current receipt
+  const holdCurrentReceipt = useCallback(() => {
+    if (cart.length === 0) { toast.error("Cart is empty — nothing to hold"); return; }
+    const held: HeldReceipt = {
+      id: crypto.randomUUID(),
+      label: customer.name || `Receipt ${heldReceipts.length + 1}`,
+      cart: [...cart],
+      customer: { ...customer },
+      customerType,
+      timestamp: Date.now(),
+    };
+    setHeldReceipts(prev => [...prev, held]);
+    setCart([]);
+    setCustomer({ name: "", phone: "", address: "", district: "Kampala", payment_method: "cash", payment_phone: "", notes: "" });
+    setSelectedCreditBalance(null);
+    setCustomerType("retail");
+    toast.success(`Receipt held — ${held.label}`);
+  }, [cart, customer, customerType, heldReceipts.length]);
+
+  const resumeHeldReceipt = useCallback((id: string) => {
+    const held = heldReceipts.find(h => h.id === id);
+    if (!held) return;
+    // If current cart has items, hold it first
+    if (cart.length > 0) {
+      const currentHeld: HeldReceipt = {
+        id: crypto.randomUUID(),
+        label: customer.name || `Receipt`,
+        cart: [...cart],
+        customer: { ...customer },
+        customerType,
+        timestamp: Date.now(),
+      };
+      setHeldReceipts(prev => [...prev.filter(h => h.id !== id), currentHeld]);
+    } else {
+      setHeldReceipts(prev => prev.filter(h => h.id !== id));
+    }
+    setCart(held.cart);
+    setCustomer(held.customer);
+    setCustomerType(held.customerType);
+    toast.success(`Resumed — ${held.label}`);
+  }, [cart, customer, customerType, heldReceipts]);
+
+
   const addToCartTracked = useCallback((product: Product, qty: number = 1) => {
     addToCart(product, qty);
     lastAddedIdRef.current = product.id;
