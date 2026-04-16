@@ -186,6 +186,7 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
           {children}
         </div>
       </main>
+      <AdminAIAssistant />
     </div>
   );
 };
