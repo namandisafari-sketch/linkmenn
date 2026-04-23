@@ -16,9 +16,7 @@ import { CalendarIcon } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import InventoryPage from "@/components/admin/InventoryPage";
 import OrdersPage from "@/components/admin/OrdersPage";
-import SalesReportPage from "@/components/admin/SalesReportPage";
 import SettingsPage from "@/components/admin/SettingsPage";
-import POSPage from "@/components/admin/POSPage";
 import POSInlinePage from "@/components/admin/POSInlinePage";
 import CustomerCreditsPage from "@/components/admin/CustomerCreditsPage";
 import ProductPreviewPage from "@/components/admin/ProductPreviewPage";
@@ -306,20 +304,18 @@ const AdminDashboard = () => {
 
   const getPageContent = () => {
     if (path === "/admin/pos") return <POSInlinePage />;
-    if (path === "/admin/pos-classic") return <POSPage />;
-    if (path === "/admin/pos-inline") return <POSInlinePage />;
     if (path === "/admin/inventory") return <InventoryPage />;
     if (path === "/admin/stock-purchase") return <StockPurchasePage />;
     if (path === "/admin/batches") return <BatchManagementPage />;
     if (path === "/admin/orders") return <OrdersPage />;
-    if (path === "/admin/reports") return <SalesReportPage />;
+    if (path === "/admin/reports") return <ReportsHubPage />;
     if (path === "/admin/sales-history") return <SalesHistoryPage />;
     if (path === "/admin/credits") return <CustomerCreditsPage />;
     if (path === "/admin/preview") return <ProductPreviewPage />;
     if (path === "/admin/analytics") return <CustomerAnalyticsPage />;
     if (path === "/admin/prescriptions") return <PrescriptionRulesPage />;
     if (path === "/admin/accounting") return <AccountingPage />;
-    
+
     if (path === "/admin/suppliers") return <SupplierManagementPage />;
     if (path === "/admin/day-book") return <DayBookPage />;
     if (path === "/admin/expenses") return <ExpensePage />;

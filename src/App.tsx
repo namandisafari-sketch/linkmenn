@@ -35,15 +35,12 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/pos" element={<AdminDashboard />} />
-              <Route path="/admin/pos-inline" element={<AdminDashboard />} />
               <Route path="/admin/inventory" element={<AdminDashboard />} />
               <Route path="/admin/stock-purchase" element={<AdminDashboard />} />
-              <Route path="/admin/stock-update" element={<AdminDashboard />} />
               <Route path="/admin/orders" element={<AdminDashboard />} />
               <Route path="/admin/reports" element={<AdminDashboard />} />
               <Route path="/admin/sales-history" element={<AdminDashboard />} />
               <Route path="/admin/credits" element={<AdminDashboard />} />
-              <Route path="/admin/sales-history" element={<AdminDashboard />} />
               <Route path="/admin/preview" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AdminDashboard />} />
               <Route path="/admin/prescriptions" element={<AdminDashboard />} />
