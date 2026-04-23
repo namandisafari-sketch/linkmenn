@@ -446,13 +446,6 @@ export type Database = {
             referencedRelation: "medicines"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "grn_lines_medicine_id_fkey"
-            columns: ["medicine_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       journal_lines: {
@@ -498,13 +491,6 @@ export type Database = {
             columns: ["journal_id"]
             isOneToOne: false
             referencedRelation: "journals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "general_ledger_voucher_id_fkey"
-            columns: ["journal_id"]
-            isOneToOne: false
-            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
           {
@@ -649,13 +635,6 @@ export type Database = {
             columns: ["medicine_id"]
             isOneToOne: false
             referencedRelation: "medicines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_batches_product_id_fkey"
-            columns: ["medicine_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -812,13 +791,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "medicines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -1002,13 +974,6 @@ export type Database = {
             referencedRelation: "medicines"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prescription_rules_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profiles: {
@@ -1092,13 +1057,6 @@ export type Database = {
             referencedRelation: "journals"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "purchase_invoices_voucher_id_fkey"
-            columns: ["voucher_id"]
-            isOneToOne: false
-            referencedRelation: "vouchers"
-            referencedColumns: ["id"]
-          },
         ]
       }
       purchase_order_items: {
@@ -1144,13 +1102,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "medicines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
@@ -1391,24 +1342,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "voucher_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "voucher_items_voucher_id_fkey"
             columns: ["voucher_id"]
             isOneToOne: false
             referencedRelation: "journals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voucher_items_voucher_id_fkey"
-            columns: ["voucher_id"]
-            isOneToOne: false
-            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
         ]
@@ -1433,322 +1370,7 @@ export type Database = {
       }
     }
     Views: {
-      general_ledger: {
-        Row: {
-          account_id: string | null
-          account_name: string | null
-          account_type: string | null
-          created_at: string | null
-          credit: number | null
-          debit: number | null
-          entry_date: string | null
-          id: string | null
-          journal_id: string | null
-          narration: string | null
-        }
-        Insert: {
-          account_id?: string | null
-          account_name?: string | null
-          account_type?: string | null
-          created_at?: string | null
-          credit?: number | null
-          debit?: number | null
-          entry_date?: string | null
-          id?: string | null
-          journal_id?: string | null
-          narration?: string | null
-        }
-        Update: {
-          account_id?: string | null
-          account_name?: string | null
-          account_type?: string | null
-          created_at?: string | null
-          credit?: number | null
-          debit?: number | null
-          entry_date?: string | null
-          id?: string | null
-          journal_id?: string | null
-          narration?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "general_ledger_voucher_id_fkey"
-            columns: ["journal_id"]
-            isOneToOne: false
-            referencedRelation: "journals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "general_ledger_voucher_id_fkey"
-            columns: ["journal_id"]
-            isOneToOne: false
-            referencedRelation: "vouchers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "journal_lines_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_batches: {
-        Row: {
-          batch_number: string | null
-          created_at: string | null
-          expiry_date: string | null
-          grn_id: string | null
-          id: string | null
-          medicine_id: string | null
-          mfg_date: string | null
-          mrp: number | null
-          pharmacy_id: string | null
-          purchase_cost: number | null
-          purchase_price: number | null
-          qty_received: number | null
-          qty_remaining: number | null
-          quantity: number | null
-          selling_price: number | null
-        }
-        Insert: {
-          batch_number?: string | null
-          created_at?: string | null
-          expiry_date?: string | null
-          grn_id?: string | null
-          id?: string | null
-          medicine_id?: string | null
-          mfg_date?: string | null
-          mrp?: number | null
-          pharmacy_id?: string | null
-          purchase_cost?: number | null
-          purchase_price?: number | null
-          qty_received?: number | null
-          qty_remaining?: number | null
-          quantity?: number | null
-          selling_price?: number | null
-        }
-        Update: {
-          batch_number?: string | null
-          created_at?: string | null
-          expiry_date?: string | null
-          grn_id?: string | null
-          id?: string | null
-          medicine_id?: string | null
-          mfg_date?: string | null
-          mrp?: number | null
-          pharmacy_id?: string | null
-          purchase_cost?: number | null
-          purchase_price?: number | null
-          qty_received?: number | null
-          qty_remaining?: number | null
-          quantity?: number | null
-          selling_price?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medicine_batches_pharmacy_id_fkey"
-            columns: ["pharmacy_id"]
-            isOneToOne: false
-            referencedRelation: "pharmacies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_batches_product_id_fkey"
-            columns: ["medicine_id"]
-            isOneToOne: false
-            referencedRelation: "medicines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_batches_product_id_fkey"
-            columns: ["medicine_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      products: {
-        Row: {
-          barcode: string | null
-          batch_number: string | null
-          brand: string | null
-          buying_price: number | null
-          category_id: string | null
-          created_at: string | null
-          description: string | null
-          expiry_date: string | null
-          generic_name: string | null
-          id: string | null
-          image_url: string | null
-          is_active: boolean | null
-          is_controlled: boolean | null
-          name: string | null
-          pharmacy_id: string | null
-          pieces_per_unit: number | null
-          prescription_info: string | null
-          price: number | null
-          product_code: string | null
-          reorder_level: number | null
-          requires_prescription: boolean | null
-          stock: number | null
-          unit: string | null
-          unit_description: string | null
-          unit_of_measure: string | null
-          unit_prices: Json | null
-          updated_at: string | null
-          vat_applicable: boolean | null
-          wholesale_price: number | null
-        }
-        Insert: {
-          barcode?: string | null
-          batch_number?: string | null
-          brand?: string | null
-          buying_price?: number | null
-          category_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          expiry_date?: string | null
-          generic_name?: string | null
-          id?: string | null
-          image_url?: string | null
-          is_active?: boolean | null
-          is_controlled?: boolean | null
-          name?: string | null
-          pharmacy_id?: string | null
-          pieces_per_unit?: number | null
-          prescription_info?: string | null
-          price?: number | null
-          product_code?: string | null
-          reorder_level?: number | null
-          requires_prescription?: boolean | null
-          stock?: number | null
-          unit?: string | null
-          unit_description?: string | null
-          unit_of_measure?: string | null
-          unit_prices?: Json | null
-          updated_at?: string | null
-          vat_applicable?: boolean | null
-          wholesale_price?: number | null
-        }
-        Update: {
-          barcode?: string | null
-          batch_number?: string | null
-          brand?: string | null
-          buying_price?: number | null
-          category_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          expiry_date?: string | null
-          generic_name?: string | null
-          id?: string | null
-          image_url?: string | null
-          is_active?: boolean | null
-          is_controlled?: boolean | null
-          name?: string | null
-          pharmacy_id?: string | null
-          pieces_per_unit?: number | null
-          prescription_info?: string | null
-          price?: number | null
-          product_code?: string | null
-          reorder_level?: number | null
-          requires_prescription?: boolean | null
-          stock?: number | null
-          unit?: string | null
-          unit_description?: string | null
-          unit_of_measure?: string | null
-          unit_prices?: Json | null
-          updated_at?: string | null
-          vat_applicable?: boolean | null
-          wholesale_price?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medicines_pharmacy_id_fkey"
-            columns: ["pharmacy_id"]
-            isOneToOne: false
-            referencedRelation: "pharmacies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vouchers: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          id: string | null
-          is_cancelled: boolean | null
-          narration: string | null
-          party_name: string | null
-          party_phone: string | null
-          pharmacy_id: string | null
-          posted_by: string | null
-          reference: string | null
-          reference_id: string | null
-          status: string | null
-          total_amount: number | null
-          updated_at: string | null
-          voucher_date: string | null
-          voucher_number: string | null
-          voucher_type: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string | null
-          is_cancelled?: boolean | null
-          narration?: string | null
-          party_name?: string | null
-          party_phone?: string | null
-          pharmacy_id?: string | null
-          posted_by?: string | null
-          reference?: string | null
-          reference_id?: string | null
-          status?: string | null
-          total_amount?: number | null
-          updated_at?: string | null
-          voucher_date?: string | null
-          voucher_number?: string | null
-          voucher_type?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string | null
-          is_cancelled?: boolean | null
-          narration?: string | null
-          party_name?: string | null
-          party_phone?: string | null
-          pharmacy_id?: string | null
-          posted_by?: string | null
-          reference?: string | null
-          reference_id?: string | null
-          status?: string | null
-          total_amount?: number | null
-          updated_at?: string | null
-          voucher_date?: string | null
-          voucher_number?: string | null
-          voucher_type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "journals_pharmacy_id_fkey"
-            columns: ["pharmacy_id"]
-            isOneToOne: false
-            referencedRelation: "pharmacies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       deduct_fefo_stock: {
