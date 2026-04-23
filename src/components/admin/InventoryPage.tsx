@@ -642,7 +642,7 @@ const InventoryPage = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} target="products" onSuccess={fetchData} />
+      <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} target="medicines" onSuccess={fetchData} />
     </div>
   );
 };
