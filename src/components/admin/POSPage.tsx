@@ -792,37 +792,17 @@ const POSPage = () => {
       const { error: itemsErr } = await supabase.from("order_items").insert(items as any);
       if (itemsErr) throw itemsErr;
 
-      // FEFO batch deduction - aggregate stock usage per product
-      const stockDeductions: Record<string, number> = {};
-      for (const i of cart) {
-        const stockUsed = i.sellingUnit ? i.quantity / i.sellingUnit.perFullUnit : i.quantity;
-        stockDeductions[i.product.id] = (stockDeductions[i.product.id] || 0) + stockUsed;
-      }
-
-      for (const [productId, totalDeduction] of Object.entries(stockDeductions)) {
-        const cartItem = cart.find(i => i.product.id === productId)!;
-        let remaining = totalDeduction;
-        const { data: batches } = await supabase
-          .from("medicine_batches")
-          .select("*")
-          .eq("medicine_id", productId)
-          .gt("qty_remaining", 0)
-          .order("expiry_date", { ascending: true });
-
-        if (batches && batches.length > 0) {
-          for (const batch of batches) {
-            if (remaining <= 0) break;
-            const batchExpiry = new Date((batch as any).expiry_date);
-            if (batchExpiry < new Date()) continue;
-            const deduct = Math.min(remaining, (batch as any).qty_remaining);
-            await supabase.from("medicine_batches").update({
-              qty_remaining: (batch as any).qty_remaining - deduct,
-            } as any).eq("id", (batch as any).id);
-            remaining -= deduct;
-          }
-        }
-        await supabase.from("medicines").update({ stock: cartItem.product.stock - totalDeduction }).eq("id", productId);
-      }
+      // FEFO stock deduction is handled atomically inside post_sale_voucher RPC below.
+      // Build sale lines payload (one entry per cart item, qty in base units)
+      const saleLines = cart.map((i) => {
+        const baseQty = i.sellingUnit ? i.quantity / i.sellingUnit.perFullUnit : i.quantity;
+        return {
+          medicine_id: i.product.id,
+          qty: Math.max(1, Math.round(baseQty)),
+          rate: getEffectivePrice(i.product, i.customPrice, i.sellingUnit),
+          discount: 0,
+        };
+      });
 
       // Upsert customer credit
       const { data: existingCredit } = await supabase
@@ -889,6 +869,21 @@ const POSPage = () => {
           } as any);
         }
       }
+
+      // ── ERP: Atomic FEFO + double-entry journal via post_sale_voucher RPC ──
+      try {
+        const customerCreditId = (await supabase
+          .from("customer_credits")
+          .select("id")
+          .eq("customer_phone", customer.phone)
+          .maybeSingle()).data?.id ?? null;
+        const { error: rpcErr } = await supabase.rpc("post_sale_voucher", {
+          p_sale_lines: saleLines as any,
+          p_customer_id: customerCreditId,
+          p_payment_method: customer.payment_method,
+        });
+        if (rpcErr) console.error("post_sale_voucher failed:", rpcErr);
+      } catch (rpcEx) { console.error("Sale voucher RPC error:", rpcEx); }
 
       const prescriptionInserts = Object.entries(selectedPrescriptions).map(([productId, sp]) => ({
         order_id: order.id,
