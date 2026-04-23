@@ -206,8 +206,11 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
         <div className="flex-1 overflow-auto p-4 md:p-6">
           {children}
         </div>
+        <FunctionBar onSearch={() => setSearchOpen(true)} onHelp={() => setHelpOpen(true)} />
       </main>
       <AdminAIAssistant />
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <MedicineSearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 };
