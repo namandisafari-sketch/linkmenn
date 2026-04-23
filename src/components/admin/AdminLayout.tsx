@@ -49,7 +49,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) => {
   const location = useLocation();
-  const navigate = useNavigate();
+  
   const { signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
