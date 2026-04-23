@@ -1,10 +1,10 @@
 import { ReactNode, useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Package, ShoppingBag, FileText, LogOut, Settings, X,
   Menu, ShoppingCart, Users, Eye, BarChart3, History, Pill,
   BookOpen, AlertTriangle, Layers, Truck, PackagePlus,
-  Wifi, WifiOff, Maximize, Minimize
+  Wifi, WifiOff, Maximize, Minimize, ShieldCheck
 } from "lucide-react";
 // Button not needed in layout
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminAIAssistant from "@/components/admin/AdminAIAssistant";
 import SyncStatusBadge from "@/components/admin/SyncStatusBadge";
+import FunctionBar from "@/components/admin/FunctionBar";
+import HelpDialog from "@/components/admin/HelpDialog";
+import MedicineSearchPalette from "@/components/admin/MedicineSearchPalette";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin", shortcut: "1" },
