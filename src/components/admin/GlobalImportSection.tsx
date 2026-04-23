@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
-type ImportTarget = "products" | "suppliers" | "customer_credits" | "product_batches";
+type ImportTarget = "medicines" | "suppliers" | "customer_credits" | "medicine_batches";
 
 const TARGET_CONFIG: Record<ImportTarget, { label: string; columns: string[] }> = {
   products: { label: "Products / Inventory", columns: ["name", "price", "stock", "unit"] },
@@ -71,7 +71,7 @@ const parseCSV = (text: string): { headers: string[]; rows: Record<string, strin
 };
 
 const GlobalImportSection = () => {
-  const [target, setTarget] = useState<ImportTarget>("products");
+  const [target, setTarget] = useState<ImportTarget>("medicines");
   const [file, setFile] = useState<File | null>(null);
   const [parsed, setParsed] = useState<{ headers: string[]; rows: Record<string, string>[] } | null>(null);
   const [importing, setImporting] = useState(false);

@@ -78,7 +78,7 @@ const SalesReportPage = () => {
         .gte("created_at", prevFrom.toISOString().split("T")[0] + "T00:00:00")
         .lt("created_at", dateFrom + "T00:00:00")
         .order("created_at", { ascending: false }),
-      supabase.from("products").select("id, name, price, stock, unit"),
+      supabase.from("medicines").select("id, name, price, stock, unit"),
       supabase.from("customer_credits").select("*"),
     ]);
 

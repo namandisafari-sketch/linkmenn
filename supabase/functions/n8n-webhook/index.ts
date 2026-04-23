@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
           if (!productId && item.product_name) {
             const { data: prods } = await admin
-              .from("products")
+              .from("medicines")
               .select("id, price, stock")
               .ilike("name", `%${item.product_name}%`)
               .limit(1);
@@ -135,9 +135,9 @@ Deno.serve(async (req) => {
 
           // Deduct stock
           if (item.product_id) {
-            const { data: prod } = await admin.from("products").select("stock").eq("id", item.product_id).single();
+            const { data: prod } = await admin.from("medicines").select("stock").eq("id", item.product_id).single();
             if (prod) {
-              await admin.from("products").update({ stock: Math.max(0, prod.stock - item.quantity) }).eq("id", item.product_id);
+              await admin.from("medicines").update({ stock: Math.max(0, prod.stock - item.quantity) }).eq("id", item.product_id);
             }
           }
         }
@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
 
       case "check_stock": {
         const { product_name, low_stock_only } = data || {};
-        let query = admin.from("products").select("id, name, price, stock, unit, expiry_date, is_active");
+        let query = admin.from("medicines").select("id, name, price, stock, unit, expiry_date, is_active");
         
         if (product_name) {
           query = query.ilike("name", `%${product_name}%`);
@@ -189,18 +189,18 @@ Deno.serve(async (req) => {
         
         let targetId = product_id;
         if (!targetId && product_name) {
-          const { data: prods } = await admin.from("products").select("id").ilike("name", `%${product_name}%`).limit(1);
+          const { data: prods } = await admin.from("medicines").select("id").ilike("name", `%${product_name}%`).limit(1);
           targetId = prods?.[0]?.id;
         }
         
         if (!targetId) throw new Error("Product not found");
 
         if (new_stock !== undefined) {
-          await admin.from("products").update({ stock: new_stock }).eq("id", targetId);
+          await admin.from("medicines").update({ stock: new_stock }).eq("id", targetId);
         } else if (adjustment) {
-          const { data: prod } = await admin.from("products").select("stock").eq("id", targetId).single();
+          const { data: prod } = await admin.from("medicines").select("stock").eq("id", targetId).single();
           if (prod) {
-            await admin.from("products").update({ stock: Math.max(0, prod.stock + adjustment) }).eq("id", targetId);
+            await admin.from("medicines").update({ stock: Math.max(0, prod.stock + adjustment) }).eq("id", targetId);
           }
         }
 
@@ -213,8 +213,8 @@ Deno.serve(async (req) => {
         const today = new Date().toISOString().split("T")[0];
         const [ordersRes, expensesRes, lowStockRes] = await Promise.all([
           admin.from("orders").select("total, payment_method, customer_name").gte("sale_date", today),
-          admin.from("general_ledger").select("debit, account_name").eq("account_type", "expense").gte("entry_date", today),
-          admin.from("products").select("name, stock").lte("stock", 10).eq("is_active", true),
+          admin.from("journal_lines").select("debit, account_name").eq("account_type", "expense").gte("entry_date", today),
+          admin.from("medicines").select("name, stock").lte("stock", 10).eq("is_active", true),
         ]);
 
         const orders = ordersRes.data || [];

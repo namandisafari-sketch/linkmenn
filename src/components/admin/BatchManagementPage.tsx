@@ -50,8 +50,8 @@ const BatchManagementPage = () => {
   const fetchData = async () => {
     setLoading(true);
     const [{ data: b }, { data: p }] = await Promise.all([
-      supabase.from("product_batches").select("*").order("expiry_date"),
-      supabase.from("products").select("id, name").order("name"),
+      supabase.from("medicine_batches").select("*").order("expiry_date"),
+      supabase.from("medicines").select("id, name").order("name"),
     ]);
 
     const productMap: Record<string, string> = {};
@@ -104,10 +104,10 @@ const BatchManagementPage = () => {
     };
 
     if (editingId) {
-      const { error } = await supabase.from("product_batches").update(payload as any).eq("id", editingId);
+      const { error } = await supabase.from("medicine_batches").update(payload as any).eq("id", editingId);
       if (error) { toast.error(error.message); setSaving(false); return; }
     } else {
-      const { error } = await supabase.from("product_batches").insert(payload as any);
+      const { error } = await supabase.from("medicine_batches").insert(payload as any);
       if (error) { toast.error(error.message); setSaving(false); return; }
     }
 
@@ -119,7 +119,7 @@ const BatchManagementPage = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this batch?")) return;
-    const { error } = await supabase.from("product_batches").delete().eq("id", id);
+    const { error } = await supabase.from("medicine_batches").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Batch deleted");
     fetchData();

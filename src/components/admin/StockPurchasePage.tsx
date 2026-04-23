@@ -93,7 +93,7 @@ const StockPurchasePage = () => {
   const fetchData = async () => {
     const [{ data: s }, { data: p }] = await Promise.all([
       supabase.from("suppliers").select("id, name, phone, address, contact_person, payment_terms").order("name"),
-      supabase.from("products").select("id, name, price, unit, buying_price").order("name"),
+      supabase.from("medicines").select("id, name, price, unit, buying_price").order("name"),
     ]);
     setSuppliers((s || []) as Supplier[]);
     setProducts((p || []) as Product[]);
@@ -142,7 +142,7 @@ const StockPurchasePage = () => {
   const fetchHistory = async () => {
     setHistoryLoading(true);
     const { data } = await supabase
-      .from("vouchers")
+      .from("journals")
       .select("id, voucher_number, voucher_date, party_name, total_amount, narration, status, created_at")
       .eq("voucher_type", "purchase")
       .order("created_at", { ascending: false })
@@ -157,8 +157,8 @@ const StockPurchasePage = () => {
     if (purchaseItems[voucherId]) return purchaseItems[voucherId];
     const [invoiceRes, ledgerRes, voucherItemsRes] = await Promise.all([
       supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle(),
-      supabase.from("general_ledger").select("*").eq("voucher_id", voucherId),
-      supabase.from("voucher_items").select("*, products(name, unit)").eq("voucher_id", voucherId),
+      supabase.from("journal_lines").select("*").eq("journal_id", voucherId),
+      supabase.from("voucher_items").select("*, medicines(name, unit)").eq("voucher_id", voucherId),
     ]);
     const loadedItems = [
       ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
@@ -350,7 +350,7 @@ const StockPurchasePage = () => {
     setSaving(true);
     try {
       const voucherNumber = `PV-${Date.now().toString(36).toUpperCase()}`;
-      const { data: voucher, error: vErr } = await supabase.from("vouchers").insert({
+      const { data: voucher, error: vErr } = await supabase.from("journals").insert({
         voucher_number: voucherNumber, voucher_type: "purchase",
         party_name: supplierName,
         narration: `Stock purchase - Invoice: ${invoiceNumber}. ${notes}`.trim(),
@@ -358,9 +358,9 @@ const StockPurchasePage = () => {
       } as any).select().single();
       if (vErr) throw vErr;
 
-      await supabase.from("general_ledger").insert([
-        { voucher_id: (voucher as any).id, account_name: "Inventory / Stock", account_type: "asset", debit: totalAmount, credit: 0, narration: `Purchase from ${supplierName} - ${invoiceNumber}` },
-        { voucher_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: 0, credit: totalAmount, narration: `Payable to ${supplierName} - ${invoiceNumber}` },
+      await supabase.from("journal_lines").insert([
+        { journal_id: (voucher as any).id, account_name: "Inventory / Stock", account_type: "asset", debit: totalAmount, credit: 0, narration: `Purchase from ${supplierName} - ${invoiceNumber}` },
+        { journal_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: 0, credit: totalAmount, narration: `Payable to ${supplierName} - ${invoiceNumber}` },
       ] as any);
 
       await supabase.from("purchase_invoices").insert({
@@ -397,14 +397,14 @@ const StockPurchasePage = () => {
       await supabase.from("voucher_items").insert(voucherItems as any);
 
       for (const line of lines) {
-        await supabase.from("product_batches").insert({
+        await supabase.from("medicine_batches").insert({
           product_id: line.product_id, batch_number: line.batch_number,
           mfg_date: line.mfg_date || null, expiry_date: line.expiry_date,
           purchase_price: line.purchase_price, mrp: line.selling_price, quantity: line.quantity,
         } as any);
-        const { data: prod } = await supabase.from("products").select("stock, buying_price").eq("id", line.product_id).single();
+        const { data: prod } = await supabase.from("medicines").select("stock, buying_price").eq("id", line.product_id).single();
         if (prod) {
-          await supabase.from("products").update({
+          await supabase.from("medicines").update({
             stock: prod.stock + line.quantity,
             buying_price: line.purchase_price,
           }).eq("id", line.product_id);

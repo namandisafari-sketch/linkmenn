@@ -79,7 +79,7 @@ const InventoryPage = () => {
   const fetchData = async () => {
     setLoading(true);
     const [{ data: prods }, { data: cats }] = await Promise.all([
-      supabase.from("products").select("*").order("name"),
+      supabase.from("medicines").select("*").order("name"),
       supabase.from("categories").select("*").order("name"),
     ]);
     setProducts(prods || []);
@@ -179,10 +179,10 @@ const InventoryPage = () => {
     let productId = editingId;
 
     if (editingId) {
-      const { error } = await supabase.from("products").update(payload).eq("id", editingId);
+      const { error } = await supabase.from("medicines").update(payload).eq("id", editingId);
       if (error) { toast.error(error.message); setSaving(false); return; }
     } else {
-      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
+      const { data, error } = await supabase.from("medicines").insert(payload).select("id").single();
       if (error) { toast.error(error.message); setSaving(false); return; }
       productId = data.id;
     }
@@ -191,7 +191,7 @@ const InventoryPage = () => {
     if (imageFile && productId) {
       const imageUrl = await uploadImage(productId);
       if (imageUrl) {
-        await supabase.from("products").update({ image_url: imageUrl }).eq("id", productId);
+        await supabase.from("medicines").update({ image_url: imageUrl }).eq("id", productId);
       }
     }
 
@@ -203,7 +203,7 @@ const InventoryPage = () => {
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
-    const { error } = await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("medicines").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Product deleted");
     fetchData();

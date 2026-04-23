@@ -26,7 +26,7 @@ const ShopPage = () => {
     queryKey: ["shop-products"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("medicines")
         .select("*, categories(name)")
         .eq("is_active", true)
         .order("name");

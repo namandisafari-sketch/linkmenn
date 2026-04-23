@@ -51,7 +51,7 @@ const ExpensePage = () => {
     const endOfMonth = `${filterMonth}-${String(endDate.getDate()).padStart(2, "0")}`;
 
     const [expRes, revenueRes, monthRevenueRes] = await Promise.all([
-      supabase.from("general_ledger")
+      supabase.from("journal_lines")
         .select("id, account_name, narration, debit, credit, entry_date, account_type")
         .eq("account_type", "expense")
         .gte("entry_date", startOfMonth)
@@ -104,7 +104,7 @@ const ExpensePage = () => {
 
     // Create voucher first
     const voucherNumber = `EXP-${Date.now()}`;
-    const { data: voucher, error: vErr } = await supabase.from("vouchers").insert({
+    const { data: voucher, error: vErr } = await supabase.from("journals").insert({
       voucher_number: voucherNumber,
       voucher_type: "payment",
       voucher_date: date,
@@ -120,8 +120,8 @@ const ExpensePage = () => {
     }
 
     // Create ledger entry for expense (debit)
-    const { error } = await supabase.from("general_ledger").insert({
-      voucher_id: voucher.id,
+    const { error } = await supabase.from("journal_lines").insert({
+      journal_id: voucher.id,
       account_name: category,
       account_type: "expense",
       debit: parseFloat(amount),
@@ -143,7 +143,7 @@ const ExpensePage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("general_ledger").delete().eq("id", id);
+    const { error } = await supabase.from("journal_lines").delete().eq("id", id);
     if (error) toast.error("Failed to delete");
     else { toast.success("Expense deleted"); fetchData(); }
   };

@@ -15,7 +15,7 @@ const ProductDetail = () => {
     queryKey: ["product", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("medicines")
         .select("*, categories(name)")
         .eq("id", id!)
         .single();
@@ -29,7 +29,7 @@ const ProductDetail = () => {
     queryKey: ["related-products", product?.category_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("medicines")
         .select("*, categories(name)")
         .eq("is_active", true)
         .eq("category_id", product!.category_id!)

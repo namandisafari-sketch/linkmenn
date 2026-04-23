@@ -52,7 +52,7 @@ const SalesHistoryPage = () => {
         .gte("created_at", dateFrom + "T00:00:00")
         .lte("created_at", dateTo + "T23:59:59")
         .order("created_at", { ascending: false }),
-      supabase.from("products").select("id, name, stock"),
+      supabase.from("medicines").select("id, name, stock"),
     ]);
     setSales((orders as SaleRecord[]) || []);
     setProducts(prods || []);
@@ -270,9 +270,9 @@ const SalesHistoryPage = () => {
       // Restore stock for each item
       for (const item of sale.order_items) {
         if (item.product_id) {
-          const { data: prod } = await supabase.from("products").select("stock").eq("id", item.product_id).maybeSingle();
+          const { data: prod } = await supabase.from("medicines").select("stock").eq("id", item.product_id).maybeSingle();
           if (prod) {
-            await supabase.from("products").update({ stock: (prod as any).stock + item.quantity } as any).eq("id", item.product_id);
+            await supabase.from("medicines").update({ stock: (prod as any).stock + item.quantity } as any).eq("id", item.product_id);
           }
         }
       }
@@ -281,11 +281,11 @@ const SalesHistoryPage = () => {
       await supabase.from("order_items").delete().eq("order_id", sale.id);
       await supabase.from("credit_transactions").delete().eq("order_id", sale.id);
       // Delete voucher and ledger entries
-      const { data: voucher } = await supabase.from("vouchers").select("id").eq("reference_id", sale.id).maybeSingle();
+      const { data: voucher } = await supabase.from("journals").select("id").eq("reference_id", sale.id).maybeSingle();
       if (voucher) {
-        await supabase.from("general_ledger").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("journal_lines").delete().eq("journal_id", (voucher as any).id);
         await supabase.from("voucher_items").delete().eq("voucher_id", (voucher as any).id);
-        await supabase.from("vouchers").delete().eq("id", (voucher as any).id);
+        await supabase.from("journals").delete().eq("id", (voucher as any).id);
       }
       await supabase.from("orders").delete().eq("id", sale.id);
       toast.success(`Sale #${sale.id.slice(0, 8)} deleted and stock restored`);

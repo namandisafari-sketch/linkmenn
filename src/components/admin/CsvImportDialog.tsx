@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-type ImportTarget = "products" | "suppliers" | "product_batches" | "customer_credits";
+type ImportTarget = "medicines" | "suppliers" | "medicine_batches" | "customer_credits";
 
 interface CsvImportDialogProps {
   open: boolean;

@@ -6,10 +6,10 @@
 
 // ── Schema definitions for each importable table ──────────────────────
 export type ImportTarget =
-  | "products"
+  | "medicines"
   | "suppliers"
   | "customer_credits"
-  | "product_batches"
+  | "medicine_batches"
   | "tally_vouchers"
   | "categories"
   | "purchase_invoices";
@@ -34,7 +34,7 @@ interface TableSchema {
 const TABLE_SCHEMAS: TableSchema[] = [
   {
     label: "Products / Inventory",
-    table: "products",
+    table: "medicines",
     fingerprints: [
       ["name", "price", "unit"],
       ["stock_item", "rate", "quantity"],
@@ -109,7 +109,7 @@ const TABLE_SCHEMAS: TableSchema[] = [
   },
   {
     label: "Product Batches",
-    table: "product_batches",
+    table: "medicine_batches",
     fingerprints: [
       ["product_id", "batch_number", "expiry_date"],
       ["batch", "expiry", "quantity"],
@@ -556,7 +556,7 @@ export function analyzeData(
   if (stats.duplicateRows > 0) warnings.push(`${stats.duplicateRows} potential duplicate rows detected`);
 
   // ── Step 5: Suggested actions ─────────────────────
-  if (bestMatch.table === "products") {
+  if (bestMatch.table === "medicines") {
     suggestedActions.push("New products will be added; existing ones with same name will be skipped");
     if (mappedTargets.has("buying_price")) suggestedActions.push("Buying prices will be set from import data");
   }

@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       const searchTerms = lastMsg.split(" ").filter((w: string) => w.length > 3);
       for (const term of searchTerms.slice(0, 3)) {
         const { data: products } = await adminClient
-          .from("products")
+          .from("medicines")
           .select("name, price, stock, unit, is_active")
           .ilike("name", `%${term}%`)
           .limit(10);
@@ -190,15 +190,15 @@ async function handleAction(client: any, action: string, data: any, headers: any
             custom_unit_price: item.negotiated_price || null,
           });
           if (item.product_id) {
-            const { data: prod } = await client.from("products").select("stock").eq("id", item.product_id).single();
-            if (prod) await client.from("products").update({ stock: Math.max(0, prod.stock - item.quantity) }).eq("id", item.product_id);
+            const { data: prod } = await client.from("medicines").select("stock").eq("id", item.product_id).single();
+            if (prod) await client.from("medicines").update({ stock: Math.max(0, prod.stock - item.quantity) }).eq("id", item.product_id);
           }
         }
         return new Response(JSON.stringify({ success: true, order_id: order.id, total, items: orderItems, message: `Receipt created for ${customer_name}. Total: UGX ${total.toLocaleString()}` }), { headers: { ...headers, "Content-Type": "application/json" } });
       }
       case "check_stock": {
         const { product_name } = data;
-        const { data: products } = await client.from("products").select("name, price, stock, unit, expiry_date").ilike("name", `%${product_name}%`).limit(10);
+        const { data: products } = await client.from("medicines").select("name, price, stock, unit, expiry_date").ilike("name", `%${product_name}%`).limit(10);
         return new Response(JSON.stringify({ success: true, products }), { headers: { ...headers, "Content-Type": "application/json" } });
       }
       case "get_customer": {
