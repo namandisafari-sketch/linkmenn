@@ -23,6 +23,7 @@ const navItems = [
   { label: "POS / Sales", icon: ShoppingCart, path: "/admin/pos", shortcut: "2" },
   { label: "Inventory", icon: Package, path: "/admin/inventory", shortcut: "3" },
   { label: "Stock Purchase", icon: PackagePlus, path: "/admin/stock-purchase", shortcut: "4" },
+  { label: "Goods Received (GRN)", icon: Truck, path: "/admin/grn", shortcut: "" },
   { label: "Batch Tracking", icon: Layers, path: "/admin/batches", shortcut: "5" },
   { label: "Product Preview", icon: Eye, path: "/admin/preview", shortcut: "" },
   { label: "Orders", icon: ShoppingBag, path: "/admin/orders", shortcut: "6" },
