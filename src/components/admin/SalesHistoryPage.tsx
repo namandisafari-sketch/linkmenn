@@ -283,7 +283,7 @@ const SalesHistoryPage = () => {
       // Delete voucher and ledger entries
       const { data: voucher } = await supabase.from("journals").select("id").eq("reference_id", sale.id).maybeSingle();
       if (voucher) {
-        await supabase.from("journal_lines").delete().eq("voucher_id", (voucher as any).id);
+        await supabase.from("journal_lines").delete().eq("journal_id", (voucher as any).id);
         await supabase.from("voucher_items").delete().eq("voucher_id", (voucher as any).id);
         await supabase.from("journals").delete().eq("id", (voucher as any).id);
       }

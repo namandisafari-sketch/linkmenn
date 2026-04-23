@@ -121,7 +121,7 @@ const ExpensePage = () => {
 
     // Create ledger entry for expense (debit)
     const { error } = await supabase.from("journal_lines").insert({
-      voucher_id: voucher.id,
+      journal_id: voucher.id,
       account_name: category,
       account_type: "expense",
       debit: parseFloat(amount),

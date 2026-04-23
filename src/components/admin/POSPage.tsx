@@ -805,8 +805,8 @@ const POSPage = () => {
         const { data: batches } = await supabase
           .from("medicine_batches")
           .select("*")
-          .eq("product_id", productId)
-          .gt("quantity", 0)
+          .eq("medicine_id", productId)
+          .gt("qty_remaining", 0)
           .order("expiry_date", { ascending: true });
 
         if (batches && batches.length > 0) {
@@ -814,9 +814,9 @@ const POSPage = () => {
             if (remaining <= 0) break;
             const batchExpiry = new Date((batch as any).expiry_date);
             if (batchExpiry < new Date()) continue;
-            const deduct = Math.min(remaining, (batch as any).quantity);
+            const deduct = Math.min(remaining, (batch as any).qty_remaining);
             await supabase.from("medicine_batches").update({
-              quantity: (batch as any).quantity - deduct,
+              qty_remaining: (batch as any).qty_remaining - deduct,
             } as any).eq("id", (batch as any).id);
             remaining -= deduct;
           }
@@ -925,10 +925,10 @@ const POSPage = () => {
 
         if (voucher) {
           await supabase.from("journal_lines").insert([
-            { voucher_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: amountDue, credit: 0, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
-            { voucher_id: (voucher as any).id, account_name: "Sales Revenue", account_type: "income", debit: 0, credit: total, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
-            ...(creditToApply > 0 ? [{ voucher_id: (voucher as any).id, account_name: "Accounts Receivable", account_type: "asset", debit: 0, credit: creditToApply, narration: `Credit applied`, entry_date: saleDatetime }] : []),
-            ...(customer.payment_method === "credit" ? [{ voucher_id: (voucher as any).id, account_name: "Accounts Receivable", account_type: "asset", debit: total, credit: 0, narration: `Credit sale to ${customer.name}`, entry_date: saleDatetime }] : []),
+            { journal_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: amountDue, credit: 0, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
+            { journal_id: (voucher as any).id, account_name: "Sales Revenue", account_type: "income", debit: 0, credit: total, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
+            ...(creditToApply > 0 ? [{ journal_id: (voucher as any).id, account_name: "Accounts Receivable", account_type: "asset", debit: 0, credit: creditToApply, narration: `Credit applied`, entry_date: saleDatetime }] : []),
+            ...(customer.payment_method === "credit" ? [{ journal_id: (voucher as any).id, account_name: "Accounts Receivable", account_type: "asset", debit: total, credit: 0, narration: `Credit sale to ${customer.name}`, entry_date: saleDatetime }] : []),
           ] as any);
         }
       } catch (ledgerErr) { console.error("Ledger auto-entry failed:", ledgerErr); }

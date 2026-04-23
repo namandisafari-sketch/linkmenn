@@ -65,13 +65,13 @@ const DataExportSection = () => {
         case "inventory": {
           const [{ data: products }, { data: batches }] = await Promise.all([
             supabase.from("medicines").select("id, name, price, stock, unit, batch_number, expiry_date, is_active, product_code, category_id").order("name"),
-            supabase.from("medicine_batches").select("product_id, batch_number, quantity, expiry_date, mfg_date, purchase_price, mrp").order("expiry_date"),
+            supabase.from("medicine_batches").select("medicine_id, batch_number, qty_remaining, expiry_date, mfg_date, purchase_cost, mrp").order("expiry_date"),
           ]);
           const rows = (products || []).map(p => {
-            const pBatches = (batches || []).filter(b => b.product_id === p.id);
+            const pBatches = (batches || []).filter(b => b.medicine_id === p.id);
             return {
               ...p,
-              total_batch_qty: pBatches.reduce((s, b) => s + b.quantity, 0),
+              total_batch_qty: pBatches.reduce((s, b) => s + (b.qty_remaining || 0), 0),
               batch_count: pBatches.length,
               nearest_expiry: pBatches.length > 0 ? pBatches[0].expiry_date : "",
             };

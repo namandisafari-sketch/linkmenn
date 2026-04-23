@@ -17,7 +17,7 @@ type VoucherType = "sales" | "purchase" | "receipt" | "payment" | "journal";
 
 interface PurchaseInvoice {
   id: string;
-  voucher_id: string;
+  journal_id: string;
   supplier_name: string;
   invoice_number: string | null;
   invoice_date: string;
@@ -119,7 +119,7 @@ const AccountingPage = () => {
       if (vErr) throw vErr;
 
       const ledgerRows = voucherForm.entries.map(e => ({
-        voucher_id: (voucher as any).id,
+        journal_id: (voucher as any).id,
         account_name: e.account_name,
         account_type: e.account_type,
         debit: Number(e.debit) || 0,
@@ -131,7 +131,7 @@ const AccountingPage = () => {
 
       if (voucherForm.voucher_type === "purchase" && voucherForm.party_name) {
         await supabase.from("purchase_invoices").insert({
-          voucher_id: (voucher as any).id,
+          journal_id: (voucher as any).id,
           supplier_name: voucherForm.party_name,
           invoice_number: voucherNumber,
           total_amount: totalDebit,
@@ -188,8 +188,8 @@ const AccountingPage = () => {
       if (vErr) throw vErr;
 
       await supabase.from("journal_lines").insert([
-        { voucher_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: totalSettled, credit: 0, narration: "Bill settlement" },
-        { voucher_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: 0, credit: totalSettled, narration: "Bill settlement" },
+        { journal_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: totalSettled, credit: 0, narration: "Bill settlement" },
+        { journal_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: 0, credit: totalSettled, narration: "Bill settlement" },
       ] as any);
 
       for (const [invoiceId, amount] of entries) {

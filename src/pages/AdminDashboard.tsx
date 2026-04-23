@@ -58,7 +58,7 @@ const DashboardOverview = () => {
         supabase.from("orders").select("id, customer_name, total, status, created_at, order_items(quantity)").order("created_at", { ascending: false }).limit(5),
         supabase.from("customer_credits").select("*").order("credit_balance", { ascending: false }),
         supabase.from("medicines").select("price, buying_price, stock").eq("is_active", true),
-        supabase.from("medicine_batches").select("quantity, expiry_date, purchase_price, mrp, product_id").gt("quantity", 0),
+        supabase.from("medicine_batches").select("qty_remaining, expiry_date, purchase_cost, mrp, medicine_id").gt("qty_remaining", 0),
       ]);
 
       const orders = ordersRes.data || [];

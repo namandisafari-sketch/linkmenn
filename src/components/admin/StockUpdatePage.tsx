@@ -148,8 +148,8 @@ const StockUpdatePage = () => {
       if (diff < 0) {
         // Stock decrease - debit loss, credit inventory
         await supabase.from("journal_lines").insert([
-          { voucher_id: voucherNumber, account_name: "Stock Loss / Write-off", account_type: "expense", debit: absValue, credit: 0, narration: `${finalReason}: ${selectedBatch.product_name}` },
-          { voucher_id: voucherNumber, account_name: "Inventory / Stock", account_type: "asset", debit: 0, credit: absValue, narration: `${finalReason}: ${selectedBatch.product_name}` },
+          { journal_id: voucherNumber, account_name: "Stock Loss / Write-off", account_type: "expense", debit: absValue, credit: 0, narration: `${finalReason}: ${selectedBatch.product_name}` },
+          { journal_id: voucherNumber, account_name: "Inventory / Stock", account_type: "asset", debit: 0, credit: absValue, narration: `${finalReason}: ${selectedBatch.product_name}` },
         ] as any);
       }
 

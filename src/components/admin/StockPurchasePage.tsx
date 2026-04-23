@@ -157,8 +157,8 @@ const StockPurchasePage = () => {
     if (purchaseItems[voucherId]) return purchaseItems[voucherId];
     const [invoiceRes, ledgerRes, voucherItemsRes] = await Promise.all([
       supabase.from("purchase_invoices").select("*").eq("voucher_id", voucherId).maybeSingle(),
-      supabase.from("journal_lines").select("*").eq("voucher_id", voucherId),
-      supabase.from("voucher_items").select("*, products(name, unit)").eq("voucher_id", voucherId),
+      supabase.from("journal_lines").select("*").eq("journal_id", voucherId),
+      supabase.from("voucher_items").select("*, medicines(name, unit)").eq("voucher_id", voucherId),
     ]);
     const loadedItems = [
       ...(invoiceRes.data ? [{ type: "invoice", ...invoiceRes.data }] : []),
@@ -359,8 +359,8 @@ const StockPurchasePage = () => {
       if (vErr) throw vErr;
 
       await supabase.from("journal_lines").insert([
-        { voucher_id: (voucher as any).id, account_name: "Inventory / Stock", account_type: "asset", debit: totalAmount, credit: 0, narration: `Purchase from ${supplierName} - ${invoiceNumber}` },
-        { voucher_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: 0, credit: totalAmount, narration: `Payable to ${supplierName} - ${invoiceNumber}` },
+        { journal_id: (voucher as any).id, account_name: "Inventory / Stock", account_type: "asset", debit: totalAmount, credit: 0, narration: `Purchase from ${supplierName} - ${invoiceNumber}` },
+        { journal_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: 0, credit: totalAmount, narration: `Payable to ${supplierName} - ${invoiceNumber}` },
       ] as any);
 
       await supabase.from("purchase_invoices").insert({
