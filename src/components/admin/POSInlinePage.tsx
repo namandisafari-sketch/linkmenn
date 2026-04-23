@@ -533,7 +533,7 @@ const POSInlinePage = () => {
             </div>
           </dl>
         </div>
-        <div className="bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-1">
+        <div className="hidden md:block bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-1">
           <div className="font-semibold text-foreground mb-1">Shortcuts</div>
           <div><kbd className="px-1 py-0.5 bg-muted border rounded font-mono text-[10px]">F3</kbd> Open medicine search</div>
           <div><kbd className="px-1 py-0.5 bg-muted border rounded font-mono text-[10px]">Tab</kbd> Move across cells</div>
