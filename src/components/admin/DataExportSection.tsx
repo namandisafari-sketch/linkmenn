@@ -64,8 +64,8 @@ const DataExportSection = () => {
         }
         case "inventory": {
           const [{ data: products }, { data: batches }] = await Promise.all([
-            supabase.from("products").select("id, name, price, stock, unit, batch_number, expiry_date, is_active, product_code, category_id").order("name"),
-            supabase.from("product_batches").select("product_id, batch_number, quantity, expiry_date, mfg_date, purchase_price, mrp").order("expiry_date"),
+            supabase.from("medicines").select("id, name, price, stock, unit, batch_number, expiry_date, is_active, product_code, category_id").order("name"),
+            supabase.from("medicine_batches").select("product_id, batch_number, quantity, expiry_date, mfg_date, purchase_price, mrp").order("expiry_date"),
           ]);
           const rows = (products || []).map(p => {
             const pBatches = (batches || []).filter(b => b.product_id === p.id);
@@ -99,7 +99,7 @@ const DataExportSection = () => {
           break;
         }
         case "financial": {
-          let query = supabase.from("vouchers").select("voucher_number, voucher_type, voucher_date, party_name, narration, total_amount, status");
+          let query = supabase.from("journals").select("voucher_number, voucher_type, voucher_date, party_name, narration, total_amount, status");
           if (dateFrom) query = query.gte("voucher_date", dateFrom);
           if (dateTo) query = query.lte("voucher_date", dateTo + "T23:59:59");
           const { data, error } = await query.order("voucher_date", { ascending: false });

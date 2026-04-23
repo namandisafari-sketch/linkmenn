@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < products.length; i += 50) {
         const batch = products.slice(i, i + 50);
         for (const p of batch) {
-          const { error } = await adminClient.from("products").upsert({
+          const { error } = await adminClient.from("medicines").upsert({
             id: p.id,
             name: p.name,
             price: p.price || 0,
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
       // Clear existing data
       await adminClient.from("order_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-      await adminClient.from("products").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await adminClient.from("medicines").delete().neq("id", "00000000-0000-0000-0000-000000000000");
       await adminClient.from("categories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
       // Insert categories
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
           batch_number: p.batch_number || null,
           is_active: p.is_active !== false,
         }));
-        const { error } = await adminClient.from("products").insert(batch);
+        const { error } = await adminClient.from("medicines").insert(batch);
         if (error) {
           console.error(`Batch ${i} error:`, error);
           skipped += batch.length;

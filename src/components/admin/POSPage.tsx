@@ -151,7 +151,7 @@ const POSPage = () => {
           payment_method: sale.payment_method || "cash", payment_phone: "", notes: sale.notes || "",
         });
         const loadItems = async () => {
-          const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name");
+          const { data: prods } = await supabase.from("medicines").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name");
           const allProducts = (prods as Product[]) || [];
           setProducts(allProducts);
           const cartItems: CartItem[] = [];
@@ -225,7 +225,7 @@ const POSPage = () => {
     const fetch = async () => {
       setLoading(true);
       const [{ data: prods }, { data: cats }] = await Promise.all([
-        supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
+        supabase.from("medicines").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code, expiry_date").eq("is_active", true).order("name"),
         supabase.from("categories").select("*").order("name"),
       ]);
       setProducts((prods as Product[]) || []);
@@ -803,7 +803,7 @@ const POSPage = () => {
         const cartItem = cart.find(i => i.product.id === productId)!;
         let remaining = totalDeduction;
         const { data: batches } = await supabase
-          .from("product_batches")
+          .from("medicine_batches")
           .select("*")
           .eq("product_id", productId)
           .gt("quantity", 0)
@@ -815,13 +815,13 @@ const POSPage = () => {
             const batchExpiry = new Date((batch as any).expiry_date);
             if (batchExpiry < new Date()) continue;
             const deduct = Math.min(remaining, (batch as any).quantity);
-            await supabase.from("product_batches").update({
+            await supabase.from("medicine_batches").update({
               quantity: (batch as any).quantity - deduct,
             } as any).eq("id", (batch as any).id);
             remaining -= deduct;
           }
         }
-        await supabase.from("products").update({ stock: cartItem.product.stock - totalDeduction }).eq("id", productId);
+        await supabase.from("medicines").update({ stock: cartItem.product.stock - totalDeduction }).eq("id", productId);
       }
 
       // Upsert customer credit
@@ -911,7 +911,7 @@ const POSPage = () => {
 
       try {
         const voucherNumber = `SV-${order.id.slice(0, 8).toUpperCase()}`;
-        const { data: voucher } = await supabase.from("vouchers").insert({
+        const { data: voucher } = await supabase.from("journals").insert({
           voucher_number: voucherNumber,
           voucher_type: "sales",
           party_name: customer.name,
@@ -924,7 +924,7 @@ const POSPage = () => {
         } as any).select().single();
 
         if (voucher) {
-          await supabase.from("general_ledger").insert([
+          await supabase.from("journal_lines").insert([
             { voucher_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: amountDue, credit: 0, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
             { voucher_id: (voucher as any).id, account_name: "Sales Revenue", account_type: "income", debit: 0, credit: total, narration: `Sale to ${customer.name}`, entry_date: saleDatetime },
             ...(creditToApply > 0 ? [{ voucher_id: (voucher as any).id, account_name: "Accounts Receivable", account_type: "asset", debit: 0, credit: creditToApply, narration: `Credit applied`, entry_date: saleDatetime }] : []),
@@ -951,7 +951,7 @@ const POSPage = () => {
       setSaleDate(new Date().toISOString().split("T")[0]);
       setSaleTime(`${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`);
 
-      const { data: prods } = await supabase.from("products").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
+      const { data: prods } = await supabase.from("medicines").select("id, name, price, wholesale_price, buying_price, stock, unit, pieces_per_unit, unit_description, unit_prices, requires_prescription, category_id, product_code").eq("is_active", true).order("name");
       setProducts((prods as Product[]) || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to create order");

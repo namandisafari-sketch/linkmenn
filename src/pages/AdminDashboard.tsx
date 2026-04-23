@@ -54,11 +54,11 @@ const DashboardOverview = () => {
 
       const [ordersRes, productsRes, recentRes, creditsRes, allProductsRes, batchesRes] = await Promise.all([
         supabase.from("orders").select("total, status, created_at, payment_method"),
-        supabase.from("products").select("name, stock, batch_number, expiry_date").lte("stock", 15).gt("stock", -1).order("stock"),
+        supabase.from("medicines").select("name, stock, batch_number, expiry_date").lte("stock", 15).gt("stock", -1).order("stock"),
         supabase.from("orders").select("id, customer_name, total, status, created_at, order_items(quantity)").order("created_at", { ascending: false }).limit(5),
         supabase.from("customer_credits").select("*").order("credit_balance", { ascending: false }),
-        supabase.from("products").select("price, buying_price, stock").eq("is_active", true),
-        supabase.from("product_batches").select("quantity, expiry_date, purchase_price, mrp, product_id").gt("quantity", 0),
+        supabase.from("medicines").select("price, buying_price, stock").eq("is_active", true),
+        supabase.from("medicine_batches").select("quantity, expiry_date, purchase_price, mrp, product_id").gt("quantity", 0),
       ]);
 
       const orders = ordersRes.data || [];

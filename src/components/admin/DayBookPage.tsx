@@ -52,11 +52,11 @@ const DayBookPage = () => {
   const fetchData = async () => {
     setLoading(true);
     const [{ data: vouchersData }, { data: ledgerData }] = await Promise.all([
-      supabase.from("vouchers").select("*")
+      supabase.from("journals").select("*")
         .gte("voucher_date", dateFrom)
         .lte("voucher_date", dateTo)
         .order("voucher_date", { ascending: sortOrder === "asc" }),
-      supabase.from("general_ledger").select("*")
+      supabase.from("journal_lines").select("*")
         .gte("entry_date", dateFrom)
         .lte("entry_date", dateTo),
     ]);

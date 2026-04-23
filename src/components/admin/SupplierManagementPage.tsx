@@ -48,7 +48,7 @@ const SupplierManagementPage = () => {
   };
 
   const fetchLowStock = async () => {
-    const { data } = await supabase.from("products").select("id, name, stock, unit, price").lte("stock", 10).gt("stock", -1).eq("is_active", true).order("stock");
+    const { data } = await supabase.from("medicines").select("id, name, stock, unit, price").lte("stock", 10).gt("stock", -1).eq("is_active", true).order("stock");
     setLowStockItems((data as LowStockProduct[]) || []);
   };
 

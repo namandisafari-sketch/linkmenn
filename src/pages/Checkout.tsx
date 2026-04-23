@@ -102,7 +102,7 @@ const Checkout = () => {
       for (const item of items) {
         let remaining = item.quantity;
         const { data: batches } = await supabase
-          .from("product_batches")
+          .from("medicine_batches")
           .select("*")
           .eq("product_id", item.id)
           .gt("quantity", 0)
@@ -113,7 +113,7 @@ const Checkout = () => {
             if (remaining <= 0) break;
             if (new Date(batch.expiry_date) < new Date()) continue; // Skip expired
             const deduct = Math.min(remaining, batch.quantity);
-            await supabase.from("product_batches").update({ quantity: batch.quantity - deduct } as any).eq("id", batch.id);
+            await supabase.from("medicine_batches").update({ quantity: batch.quantity - deduct } as any).eq("id", batch.id);
             remaining -= deduct;
           }
         }

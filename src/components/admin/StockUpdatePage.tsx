@@ -61,8 +61,8 @@ const StockUpdatePage = () => {
   const fetchData = async () => {
     setLoading(true);
     const [{ data: b }, { data: p }] = await Promise.all([
-      supabase.from("product_batches").select("*").order("expiry_date"),
-      supabase.from("products").select("id, name").order("name"),
+      supabase.from("medicine_batches").select("*").order("expiry_date"),
+      supabase.from("medicines").select("id, name").order("name"),
     ]);
 
     const productMap: Record<string, string> = {};
@@ -75,7 +75,7 @@ const StockUpdatePage = () => {
 
     // Fetch adjustment logs from vouchers (journal type with stock adjustment narration)
     const { data: vouchers } = await supabase
-      .from("vouchers")
+      .from("journals")
       .select("id, voucher_number, narration, created_at, party_name")
       .eq("voucher_type", "journal")
       .like("narration", "STOCK_ADJ:%")
@@ -122,19 +122,19 @@ const StockUpdatePage = () => {
       const diff = newQty - selectedBatch.quantity;
 
       // Update batch quantity
-      await supabase.from("product_batches").update({ quantity: newQty } as any).eq("id", selectedBatch.id);
+      await supabase.from("medicine_batches").update({ quantity: newQty } as any).eq("id", selectedBatch.id);
 
       // Update product stock
-      const { data: prod } = await supabase.from("products").select("stock").eq("id", selectedBatch.product_id).single();
+      const { data: prod } = await supabase.from("medicines").select("stock").eq("id", selectedBatch.product_id).single();
       if (prod) {
-        await supabase.from("products").update({ stock: Math.max(0, prod.stock + diff) }).eq("id", selectedBatch.product_id);
+        await supabase.from("medicines").update({ stock: Math.max(0, prod.stock + diff) }).eq("id", selectedBatch.product_id);
       }
 
       // Create audit trail via voucher (journal entry)
       const narration = `STOCK_ADJ:${selectedBatch.id}|${selectedBatch.product_name}|${selectedBatch.batch_number || "N/A"}|${selectedBatch.quantity}|${newQty}|${finalReason}`;
       const voucherNumber = `ADJ-${Date.now().toString(36).toUpperCase()}`;
 
-      await supabase.from("vouchers").insert({
+      await supabase.from("journals").insert({
         voucher_number: voucherNumber,
         voucher_type: "journal",
         party_name: user?.email || "Admin",
@@ -147,7 +147,7 @@ const StockUpdatePage = () => {
       const absValue = Math.abs(diff * selectedBatch.purchase_price);
       if (diff < 0) {
         // Stock decrease - debit loss, credit inventory
-        await supabase.from("general_ledger").insert([
+        await supabase.from("journal_lines").insert([
           { voucher_id: voucherNumber, account_name: "Stock Loss / Write-off", account_type: "expense", debit: absValue, credit: 0, narration: `${finalReason}: ${selectedBatch.product_name}` },
           { voucher_id: voucherNumber, account_name: "Inventory / Stock", account_type: "asset", debit: 0, credit: absValue, narration: `${finalReason}: ${selectedBatch.product_name}` },
         ] as any);

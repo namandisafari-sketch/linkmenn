@@ -66,7 +66,7 @@ const AccountingPage = () => {
     setLoading(true);
     const [{ data: pi }, { count }] = await Promise.all([
       supabase.from("purchase_invoices").select("*").order("invoice_date", { ascending: false }),
-      supabase.from("vouchers").select("*", { count: "exact", head: true }),
+      supabase.from("journals").select("*", { count: "exact", head: true }),
     ]);
     setPurchaseInvoices((pi as PurchaseInvoice[]) || []);
     setRecentVoucherCount(count || 0);
@@ -108,7 +108,7 @@ const AccountingPage = () => {
     setSaving(true);
     try {
       const voucherNumber = generateVoucherNumber(voucherForm.voucher_type);
-      const { data: voucher, error: vErr } = await supabase.from("vouchers").insert({
+      const { data: voucher, error: vErr } = await supabase.from("journals").insert({
         voucher_number: voucherNumber,
         voucher_type: voucherForm.voucher_type,
         party_name: voucherForm.party_name || null,
@@ -126,7 +126,7 @@ const AccountingPage = () => {
         credit: Number(e.credit) || 0,
         narration: voucherForm.narration || null,
       }));
-      const { error: lErr } = await supabase.from("general_ledger").insert(ledgerRows as any);
+      const { error: lErr } = await supabase.from("journal_lines").insert(ledgerRows as any);
       if (lErr) throw lErr;
 
       if (voucherForm.voucher_type === "purchase" && voucherForm.party_name) {
@@ -177,7 +177,7 @@ const AccountingPage = () => {
       const totalSettled = entries.reduce((s, [, a]) => s + a, 0);
       const voucherNumber = generateVoucherNumber("payment");
 
-      const { data: voucher, error: vErr } = await supabase.from("vouchers").insert({
+      const { data: voucher, error: vErr } = await supabase.from("journals").insert({
         voucher_number: voucherNumber,
         voucher_type: "payment",
         party_name: settlementParty || "Supplier Payment",
@@ -187,7 +187,7 @@ const AccountingPage = () => {
       } as any).select().single();
       if (vErr) throw vErr;
 
-      await supabase.from("general_ledger").insert([
+      await supabase.from("journal_lines").insert([
         { voucher_id: (voucher as any).id, account_name: "Accounts Payable", account_type: "liability", debit: totalSettled, credit: 0, narration: "Bill settlement" },
         { voucher_id: (voucher as any).id, account_name: "Cash/Bank", account_type: "asset", debit: 0, credit: totalSettled, narration: "Bill settlement" },
       ] as any);

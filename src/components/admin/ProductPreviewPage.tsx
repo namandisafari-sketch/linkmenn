@@ -37,7 +37,7 @@ const ProductPreviewPage = () => {
   useEffect(() => {
     const fetch = async () => {
       const [{ data: prods }, { data: cats }] = await Promise.all([
-        supabase.from("products").select("id, name, description, price, wholesale_price, stock, unit, image_url, category_id, is_active, requires_prescription").eq("is_active", true).order("name"),
+        supabase.from("medicines").select("id, name, description, price, wholesale_price, stock, unit, image_url, category_id, is_active, requires_prescription").eq("is_active", true).order("name"),
         supabase.from("categories").select("*").order("name"),
       ]);
       setProducts((prods as Product[]) || []);
@@ -208,7 +208,7 @@ const ProductPreviewPage = () => {
                 <Switch
                   checked={previewProduct.requires_prescription}
                   onCheckedChange={async (checked) => {
-                    await supabase.from("products").update({ requires_prescription: checked } as any).eq("id", previewProduct.id);
+                    await supabase.from("medicines").update({ requires_prescription: checked } as any).eq("id", previewProduct.id);
                     setPreviewProduct({ ...previewProduct, requires_prescription: checked });
                     setProducts(prev => prev.map(p => p.id === previewProduct.id ? { ...p, requires_prescription: checked } : p));
                     toast.success(checked ? `${previewProduct.name} marked as prescription required` : `${previewProduct.name} unmarked`);

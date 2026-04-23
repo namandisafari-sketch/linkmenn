@@ -31,7 +31,7 @@ const BalanceSheetPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const { data } = await supabase.from("general_ledger").select("account_name, account_type, debit, credit, entry_date").lte("entry_date", asOfDate);
+      const { data } = await supabase.from("journal_lines").select("account_name, account_type, debit, credit, entry_date").lte("entry_date", asOfDate);
       setEntries((data as LedgerEntry[]) || []);
       setLoading(false);
     };

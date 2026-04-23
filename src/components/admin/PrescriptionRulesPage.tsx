@@ -57,7 +57,7 @@ const PrescriptionRulesPage = () => {
     setLoading(true);
     const [{ data: rulesData }, { data: prodsData }] = await Promise.all([
       supabase.from("prescription_rules").select("*").order("disease"),
-      supabase.from("products").select("id, name").eq("is_active", true).order("name"),
+      supabase.from("medicines").select("id, name").eq("is_active", true).order("name"),
     ]);
     setRules((rulesData as PrescriptionRule[]) || []);
     setProducts(prodsData || []);
