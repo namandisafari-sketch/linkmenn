@@ -35,6 +35,8 @@ const navItems = [
   { label: "Customer Accounts", icon: Users, path: "/admin/credits", shortcut: "0" },
   { label: "Customer Analytics", icon: BarChart3, path: "/admin/analytics", shortcut: "" },
   { label: "Suppliers", icon: Truck, path: "/admin/suppliers", shortcut: "" },
+  { label: "Reports Hub", icon: FileText, path: "/admin/reports-hub", shortcut: "" },
+  { label: "Audit Trail", icon: ShieldCheck, path: "/admin/audit", shortcut: "" },
   { label: "Settings", icon: Settings, path: "/admin/settings", shortcut: "" },
 ];
 
@@ -47,12 +49,34 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const currentPath = location.pathname;
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  };
+
+  // Tally-style global F-key & Alt-combo shortcuts
+  useKeyboardShortcuts({
+    F1: { type: "callback", fn: () => setHelpOpen(true) },
+    F2: { type: "navigate", path: "/admin" },
+    F3: { type: "callback", fn: () => setSearchOpen(true) },
+    F8: { type: "navigate", path: "/admin/pos" },
+    F9: { type: "navigate", path: "/admin/stock-purchase" },
+    F10: { type: "navigate", path: "/admin/accounting" },
+    F11: { type: "callback", fn: toggleFullscreen },
+    "Alt+R": { type: "navigate", path: "/admin/reports-hub" },
+    "Alt+S": { type: "navigate", path: "/admin/settings" },
+    Escape: { type: "callback", fn: () => { setHelpOpen(false); setSearchOpen(false); } },
+  });
 
   useEffect(() => {
     const goOnline = () => setIsOnline(true);
