@@ -17,7 +17,7 @@ type VoucherType = "sales" | "purchase" | "receipt" | "payment" | "journal";
 
 interface PurchaseInvoice {
   id: string;
-  journal_id: string;
+  journal_id?: string | null;
   supplier_name: string;
   invoice_number: string | null;
   invoice_date: string;

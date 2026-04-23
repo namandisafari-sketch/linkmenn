@@ -20,8 +20,8 @@ const TARGET_CONFIG: Record<ImportTarget, {
   optionalColumns: string[];
   sampleRow: Record<string, string>;
 }> = {
-  products: {
-    label: "Products / Inventory",
+  medicines: {
+    label: "Medicines / Inventory",
     requiredColumns: ["name", "price", "unit"],
     optionalColumns: ["description", "stock", "batch_number", "expiry_date", "product_code", "is_active", "requires_prescription"],
     sampleRow: { name: "Paracetamol 500mg", price: "2500", unit: "Box", stock: "100", batch_number: "BT-001", expiry_date: "2027-06-30", product_code: "PC-001" },
@@ -32,11 +32,11 @@ const TARGET_CONFIG: Record<ImportTarget, {
     optionalColumns: ["contact_person", "phone", "email", "address", "payment_terms"],
     sampleRow: { name: "MedPharma Ltd", contact_person: "John Doe", phone: "+256700000000", email: "info@medpharma.ug", address: "Kampala" },
   },
-  product_batches: {
-    label: "Product Batches",
-    requiredColumns: ["product_id", "batch_number", "expiry_date", "quantity"],
+  medicine_batches: {
+    label: "Medicine Batches",
+    requiredColumns: ["medicine_id", "batch_number", "expiry_date", "quantity"],
     optionalColumns: ["mfg_date", "purchase_price", "mrp"],
-    sampleRow: { product_id: "uuid-here", batch_number: "BT-001", expiry_date: "2027-06-30", quantity: "50", purchase_price: "1500", mrp: "2500" },
+    sampleRow: { medicine_id: "uuid-here", batch_number: "BT-001", expiry_date: "2027-06-30", quantity: "50", purchase_price: "1500", mrp: "2500" },
   },
   customer_credits: {
     label: "Customer Accounts",

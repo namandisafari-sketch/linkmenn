@@ -13,12 +13,12 @@ const FeaturedProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("medicines")
-        .select("*, categories(name)")
+        .select("*, categories:category_id(name)")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(12);
       if (error) throw error;
-      return data;
+      return (data ?? []) as any[];
     },
   });
 
