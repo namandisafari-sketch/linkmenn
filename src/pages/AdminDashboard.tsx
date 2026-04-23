@@ -34,6 +34,7 @@ import DayBookPage from "@/components/admin/DayBookPage";
 import ExpensePage from "@/components/admin/ExpensePage";
 import ReportsHubPage from "@/components/admin/ReportsHubPage";
 import AuditLogPage from "@/components/admin/AuditLogPage";
+import GRNEntryPage from "@/components/admin/GRNEntryPage";
 
 const DashboardOverview = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -322,6 +323,7 @@ const AdminDashboard = () => {
     if (path === "/admin/settings") return <SettingsPage />;
     if (path === "/admin/reports-hub") return <ReportsHubPage />;
     if (path === "/admin/audit") return <AuditLogPage />;
+    if (path === "/admin/grn") return <GRNEntryPage />;
     return <DashboardOverview />;
   };
 
@@ -345,6 +347,7 @@ const AdminDashboard = () => {
     if (path === "/admin/settings") return "Settings";
     if (path === "/admin/reports-hub") return "Financial Reports";
     if (path === "/admin/audit") return "Audit Trail";
+    if (path === "/admin/grn") return "Goods Received Note";
     return "Dashboard";
   };
 
