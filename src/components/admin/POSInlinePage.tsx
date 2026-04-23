@@ -209,27 +209,27 @@ const POSInlinePage = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-9rem)]">
+    <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-9rem)] min-h-0">
       {/* Main grid */}
-      <div className="flex-1 flex flex-col bg-card border border-border rounded-md overflow-hidden">
+      <div className="flex-1 flex flex-col bg-card border border-border rounded-md overflow-hidden min-w-0">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 sm:px-4 py-2 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">Customer</span>
             <input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="bg-transparent border-b border-border px-1 py-0.5 text-sm font-medium focus:outline-none focus:border-primary min-w-[180px]"
+              className="bg-transparent border-b border-border px-1 py-0.5 text-sm font-medium focus:outline-none focus:border-primary flex-1 sm:flex-none sm:min-w-[180px] min-w-0"
             />
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="hidden md:block text-xs text-muted-foreground">
             <kbd className="px-1.5 py-0.5 bg-background border border-border rounded font-mono text-[10px]">F3</kbd> search ·{" "}
             <kbd className="px-1.5 py-0.5 bg-background border border-border rounded font-mono text-[10px]">Ctrl+Enter</kbd> post
           </div>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-auto">
+        {/* Desktop / tablet table (md+) */}
+        <div className="hidden md:block flex-1 overflow-auto">
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 bg-muted text-xs uppercase tracking-wider">
               <tr>
