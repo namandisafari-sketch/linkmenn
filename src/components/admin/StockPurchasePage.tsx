@@ -750,7 +750,7 @@ const StockPurchasePage = () => {
             </Button>
           </div>
 
-          <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} target="product_batches" onSuccess={fetchData} />
+          <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} target="medicine_batches" onSuccess={fetchData} />
         </>
       ) : (
         /* Purchase History */
