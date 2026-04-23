@@ -8,10 +8,10 @@ import { Progress } from "@/components/ui/progress";
 type ImportTarget = "medicines" | "suppliers" | "customer_credits" | "medicine_batches";
 
 const TARGET_CONFIG: Record<ImportTarget, { label: string; columns: string[] }> = {
-  products: { label: "Products / Inventory", columns: ["name", "price", "stock", "unit"] },
+  medicines: { label: "Medicines / Inventory", columns: ["name", "price", "stock", "unit"] },
   suppliers: { label: "Suppliers", columns: ["name"] },
   customer_credits: { label: "Customer Accounts", columns: ["customer_name", "customer_phone"] },
-  product_batches: { label: "Product Batches", columns: ["product_id", "batch_number", "expiry_date"] },
+  medicine_batches: { label: "Medicine Batches", columns: ["medicine_id", "batch_number", "expiry_date"] },
 };
 
 // Deep character normalization — handles encoding artifacts, invisible chars, smart quotes etc.
