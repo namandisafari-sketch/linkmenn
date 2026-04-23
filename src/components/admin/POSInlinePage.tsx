@@ -225,7 +225,8 @@ const POSInlinePage = () => {
       window.print();
       resetForm();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to post sale";
+      const err = e as { message?: string; details?: string; hint?: string };
+      const msg = err?.message || err?.details || err?.hint || "Failed to post sale";
       toast.error(msg);
     } finally {
       setPosting(false);
