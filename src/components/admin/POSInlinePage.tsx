@@ -165,6 +165,30 @@ const POSInlinePage = () => {
       toast.error("Tendered amount is less than grand total");
       return;
     }
+    // Pre-flight: verify each medicine has enough batched stock (FEFO source)
+    const medIds = Array.from(new Set(valid.map((l) => l.medicine!.id)));
+    const { data: batchRows, error: batchErr } = await supabase
+      .from("medicine_batches")
+      .select("medicine_id,qty_remaining")
+      .in("medicine_id", medIds)
+      .gt("qty_remaining", 0);
+    if (batchErr) { toast.error(batchErr.message); return; }
+    const stockByMed: Record<string, number> = {};
+    for (const b of batchRows ?? []) {
+      stockByMed[b.medicine_id as string] = (stockByMed[b.medicine_id as string] ?? 0) + (b.qty_remaining ?? 0);
+    }
+    const needed: Record<string, number> = {};
+    for (const l of valid) needed[l.medicine!.id] = (needed[l.medicine!.id] ?? 0) + l.qty;
+    const shortages = Object.entries(needed)
+      .filter(([id, qty]) => (stockByMed[id] ?? 0) < qty)
+      .map(([id, qty]) => {
+        const name = valid.find((l) => l.medicine!.id === id)?.medicine?.name ?? "item";
+        return `${name}: need ${qty}, have ${stockByMed[id] ?? 0}`;
+      });
+    if (shortages.length > 0) {
+      toast.error("Insufficient batched stock — record a GRN first.\n" + shortages.join("\n"));
+      return;
+    }
     setPosting(true);
     try {
       // Ensure customer record (walk-in or named)
@@ -201,7 +225,8 @@ const POSInlinePage = () => {
       window.print();
       resetForm();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to post sale";
+      const err = e as { message?: string; details?: string; hint?: string };
+      const msg = err?.message || err?.details || err?.hint || "Failed to post sale";
       toast.error(msg);
     } finally {
       setPosting(false);
