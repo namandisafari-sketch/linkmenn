@@ -92,13 +92,6 @@ const AdminLayout = ({ children, title, subtitle, actions }: AdminLayoutProps) =
     };
   }, []);
 
-  const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      document.documentElement.requestFullscreen();
-    }
-  };
 
   return (
     <div className="h-screen flex bg-muted/30 overflow-hidden">
