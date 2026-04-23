@@ -285,7 +285,7 @@ const SmartImportEngine = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Import Target</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {TABLE_SCHEMAS.filter(s => ["products", "suppliers", "customer_credits", "tally_vouchers", "categories", "product_batches", "purchase_invoices"].includes(s.table)).map((s) => (
+                {TABLE_SCHEMAS.filter(s => ["medicines", "suppliers", "customer_credits", "tally_vouchers", "categories", "medicine_batches", "purchase_invoices"].includes(s.table)).map((s) => (
                   <button
                     key={s.table}
                     onClick={() => setSelectedTarget(s.table)}
