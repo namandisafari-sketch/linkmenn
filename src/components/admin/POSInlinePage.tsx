@@ -209,27 +209,27 @@ const POSInlinePage = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-9rem)]">
+    <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-9rem)] min-h-0">
       {/* Main grid */}
-      <div className="flex-1 flex flex-col bg-card border border-border rounded-md overflow-hidden">
+      <div className="flex-1 flex flex-col bg-card border border-border rounded-md overflow-hidden min-w-0">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 sm:px-4 py-2 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">Customer</span>
             <input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="bg-transparent border-b border-border px-1 py-0.5 text-sm font-medium focus:outline-none focus:border-primary min-w-[180px]"
+              className="bg-transparent border-b border-border px-1 py-0.5 text-sm font-medium focus:outline-none focus:border-primary flex-1 sm:flex-none sm:min-w-[180px] min-w-0"
             />
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="hidden md:block text-xs text-muted-foreground">
             <kbd className="px-1.5 py-0.5 bg-background border border-border rounded font-mono text-[10px]">F3</kbd> search ·{" "}
             <kbd className="px-1.5 py-0.5 bg-background border border-border rounded font-mono text-[10px]">Ctrl+Enter</kbd> post
           </div>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-auto">
+        {/* Desktop / tablet table (md+) */}
+        <div className="hidden md:block flex-1 overflow-auto">
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 bg-muted text-xs uppercase tracking-wider">
               <tr>
@@ -352,11 +352,125 @@ const POSInlinePage = () => {
           </table>
         </div>
 
+        {/* Mobile card list (<md) */}
+        <div className="md:hidden flex-1 overflow-auto divide-y divide-border">
+          {lines.map((l, idx) => {
+            const results = searchResults[l.uid] ?? [];
+            const isLast = idx === lines.length - 1;
+            return (
+              <div key={l.uid} className="p-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-[11px] text-muted-foreground font-mono mt-1.5 w-5 shrink-0">{l.medicine ? idx + 1 : "·"}</span>
+                  <div className="flex-1 relative min-w-0">
+                    <input
+                      data-pos-search={idx === 0 ? "1" : undefined}
+                      value={l.query}
+                      placeholder={isLast ? "Search medicine, brand or barcode…" : ""}
+                      onChange={(e) => {
+                        updateLine(l.uid, { query: e.target.value, medicine: e.target.value === "" ? null : l.medicine });
+                        searchMeds(l.uid, e.target.value);
+                      }}
+                      className="w-full bg-background border border-border rounded px-2 py-2 text-sm outline-none focus:border-primary"
+                    />
+                    {results.length > 0 && (
+                      <div className="absolute z-30 left-0 right-0 top-full mt-0.5 bg-popover border border-border rounded shadow-lg max-h-72 overflow-auto">
+                        {results.map((m) => (
+                          <button
+                            key={m.id}
+                            onClick={() => pickMedicine(l.uid, m)}
+                            className="w-full text-left px-3 py-2 hover:bg-accent text-sm border-b border-border/40 last:border-b-0"
+                          >
+                            <div className="font-medium truncate">{m.name}</div>
+                            <div className="text-[11px] text-muted-foreground flex justify-between">
+                              <span className="truncate">{m.generic_name ?? ""}</span>
+                              <span className="shrink-0 ml-2">stk {m.stock ?? 0} · {ugx(m.price)}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {l.medicine && (
+                    <button onClick={() => removeLine(l.uid)} className="text-muted-foreground hover:text-destructive p-1.5 shrink-0">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {l.medicine && (
+                  <>
+                    {l.batches.length > 0 && (
+                      <select
+                        value={l.batch_id ?? ""}
+                        onChange={(e) => updateLine(l.uid, { batch_id: e.target.value })}
+                        className="w-full bg-background border border-border rounded px-2 py-1.5 text-xs"
+                      >
+                        {l.batches.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.batch_number ?? "—"} · exp {b.expiry_date ?? "—"} · {b.qty_remaining}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <div className="grid grid-cols-3 gap-2">
+                      <label className="block">
+                        <span className="text-[10px] uppercase text-muted-foreground">Qty</span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          value={l.qty || ""}
+                          onChange={(e) => updateLine(l.uid, { qty: Math.max(0, parseInt(e.target.value) || 0) })}
+                          className="w-full bg-background border border-border rounded px-2 py-1.5 text-right text-sm tabular-nums"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-[10px] uppercase text-muted-foreground">Rate</span>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          value={l.rate || ""}
+                          onChange={(e) => updateLine(l.uid, { rate: Math.max(0, parseFloat(e.target.value) || 0) })}
+                          className="w-full bg-background border border-border rounded px-2 py-1.5 text-right text-sm tabular-nums"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-[10px] uppercase text-muted-foreground">Disc%</span>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          max={100}
+                          value={l.discount_pct || ""}
+                          onChange={(e) => updateLine(l.uid, { discount_pct: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                          className="w-full bg-background border border-border rounded px-2 py-1.5 text-right text-sm tabular-nums"
+                        />
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={l.vat}
+                          onChange={(e) => updateLine(l.uid, { vat: e.target.checked })}
+                        />
+                        VAT
+                      </label>
+                      <span className="font-semibold tabular-nums">{ugx(lineTotal(l))}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {/* Payment row */}
-        <div className="border-t border-border bg-muted/30 px-4 py-3 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div className="border-t border-border bg-muted/30 px-3 sm:px-4 py-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
           <div>
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Payment</label>
-            <div className="flex gap-1 mt-1">
+            <div className="flex flex-wrap gap-1 mt-1">
               {(["cash", "credit", "mobile"] as const).map((m) => (
                 <button
                   key={m}
@@ -376,6 +490,7 @@ const POSInlinePage = () => {
             <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Amount Tendered</label>
             <input
               type="number"
+              inputMode="decimal"
               value={tendered || ""}
               onChange={(e) => setTendered(Math.max(0, parseFloat(e.target.value) || 0))}
               disabled={paymentMethod !== "cash"}
@@ -388,15 +503,15 @@ const POSInlinePage = () => {
               {ugx(change)}
             </div>
           </div>
-          <Button onClick={postSale} disabled={posting} className="h-10 gap-2">
+          <Button onClick={postSale} disabled={posting} className="h-10 gap-2 w-full sm:col-span-2 lg:col-span-1">
             {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
-            Post & Print (Ctrl+Enter)
+            <span className="truncate">Post & Print <span className="hidden xl:inline">(Ctrl+Enter)</span></span>
           </Button>
         </div>
       </div>
 
       {/* Sidebar totals */}
-      <div className="lg:w-72 flex flex-col gap-3">
+      <div className="lg:w-72 lg:shrink-0 flex flex-col gap-3 order-first lg:order-none">
         <div className="bg-card border border-border rounded-md p-4">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Running Total</div>
           <dl className="space-y-2 text-sm">
@@ -418,7 +533,7 @@ const POSInlinePage = () => {
             </div>
           </dl>
         </div>
-        <div className="bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-1">
+        <div className="hidden md:block bg-card border border-border rounded-md p-4 text-xs text-muted-foreground space-y-1">
           <div className="font-semibold text-foreground mb-1">Shortcuts</div>
           <div><kbd className="px-1 py-0.5 bg-muted border rounded font-mono text-[10px]">F3</kbd> Open medicine search</div>
           <div><kbd className="px-1 py-0.5 bg-muted border rounded font-mono text-[10px]">Tab</kbd> Move across cells</div>
