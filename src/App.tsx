@@ -35,15 +35,12 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/pos" element={<AdminDashboard />} />
-              <Route path="/admin/pos-inline" element={<AdminDashboard />} />
               <Route path="/admin/inventory" element={<AdminDashboard />} />
               <Route path="/admin/stock-purchase" element={<AdminDashboard />} />
-              <Route path="/admin/stock-update" element={<AdminDashboard />} />
               <Route path="/admin/orders" element={<AdminDashboard />} />
               <Route path="/admin/reports" element={<AdminDashboard />} />
               <Route path="/admin/sales-history" element={<AdminDashboard />} />
               <Route path="/admin/credits" element={<AdminDashboard />} />
-              <Route path="/admin/sales-history" element={<AdminDashboard />} />
               <Route path="/admin/preview" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AdminDashboard />} />
               <Route path="/admin/prescriptions" element={<AdminDashboard />} />
@@ -51,9 +48,9 @@ const App = () => (
               <Route path="/admin/expenses" element={<AdminDashboard />} />
               <Route path="/admin/batches" element={<AdminDashboard />} />
               <Route path="/admin/suppliers" element={<AdminDashboard />} />
-              <Route path="/admin/purchase-history" element={<AdminDashboard />} />
+              
               <Route path="/admin/day-book" element={<AdminDashboard />} />
-              <Route path="/admin/balance-sheet" element={<AdminDashboard />} />
+              
               <Route path="/admin/settings" element={<AdminDashboard />} />
               <Route path="/admin/reports-hub" element={<AdminDashboard />} />
               <Route path="/admin/audit" element={<AdminDashboard />} />

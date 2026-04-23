@@ -58,7 +58,6 @@ export const initSyncEngine = () => {
   initialized = true;
 
   window.addEventListener("online", () => {
-    console.log("[Sync] Back online, syncing...");
     syncPendingActions();
   });
 
