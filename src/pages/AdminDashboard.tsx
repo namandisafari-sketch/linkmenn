@@ -19,6 +19,7 @@ import OrdersPage from "@/components/admin/OrdersPage";
 import SalesReportPage from "@/components/admin/SalesReportPage";
 import SettingsPage from "@/components/admin/SettingsPage";
 import POSPage from "@/components/admin/POSPage";
+import POSInlinePage from "@/components/admin/POSInlinePage";
 import CustomerCreditsPage from "@/components/admin/CustomerCreditsPage";
 import ProductPreviewPage from "@/components/admin/ProductPreviewPage";
 import CustomerAnalyticsPage from "@/components/admin/CustomerAnalyticsPage";
@@ -304,7 +305,9 @@ const AdminDashboard = () => {
   if (!isAdmin) return null;
 
   const getPageContent = () => {
-    if (path === "/admin/pos") return <POSPage />;
+    if (path === "/admin/pos") return <POSInlinePage />;
+    if (path === "/admin/pos-classic") return <POSPage />;
+    if (path === "/admin/pos-inline") return <POSInlinePage />;
     if (path === "/admin/inventory") return <InventoryPage />;
     if (path === "/admin/stock-purchase") return <StockPurchasePage />;
     if (path === "/admin/batches") return <BatchManagementPage />;
