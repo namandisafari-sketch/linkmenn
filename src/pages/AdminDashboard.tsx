@@ -34,6 +34,17 @@ import ExpensePage from "@/components/admin/ExpensePage";
 import ReportsHubPage from "@/components/admin/ReportsHubPage";
 import AuditLogPage from "@/components/admin/AuditLogPage";
 import GRNEntryPage from "@/components/admin/GRNEntryPage";
+import ErpDashboard from "@/components/admin/erp/ErpDashboard";
+import ChartOfAccountsPage from "@/components/admin/erp/ChartOfAccountsPage";
+import JournalEntryPage from "@/components/admin/erp/JournalEntryPage";
+import LedgerPage from "@/components/admin/erp/LedgerPage";
+import TrialBalancePage from "@/components/admin/erp/TrialBalancePage";
+import InvoicePage from "@/components/admin/erp/InvoicePage";
+import PartiesPage from "@/components/admin/erp/PartiesPage";
+import TaxRatesPage from "@/components/admin/erp/TaxRatesPage";
+import FiscalYearsPage from "@/components/admin/erp/FiscalYearsPage";
+import InventoryItemsPage from "@/components/admin/erp/InventoryItemsPage";
+import StubPage from "@/components/admin/erp/StubPage";
 
 const DashboardOverview = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
