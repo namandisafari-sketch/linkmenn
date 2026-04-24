@@ -34,9 +34,15 @@ const InventoryItemsPage = () => {
   useEffect(() => { load(); }, []);
 
   const onSubmit = async (v: V) => {
+    const payload = {
+      ...v,
+      cost_price: Number(v.cost_price) || 0,
+      sale_price: Number(v.sale_price) || 0,
+      stock_qty: Number(v.stock_qty) || 0,
+    };
     const { error } = editing
-      ? await supabase.from("inventory_items").update(v).eq("id", editing.id)
-      : await supabase.from("inventory_items").insert([v as any]);
+      ? await supabase.from("inventory_items").update(payload).eq("id", editing.id)
+      : await supabase.from("inventory_items").insert([payload as any]);
     if (error) return toast.error(error.message);
     toast.success("Saved"); setOpen(false); load();
   };

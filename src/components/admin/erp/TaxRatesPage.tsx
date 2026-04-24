@@ -19,7 +19,7 @@ const schema = z.object({
   tax_type: z.enum(["VAT", "WHT", "PAYE", "NSSF", "OTHER"]),
   is_active: z.boolean().default(true),
 });
-type V = z.infer<typeof schema>;
+type V = z.input<typeof schema>;
 interface Tax { id: string; name: string; rate: number; tax_type: string; is_active: boolean; }
 
 const TaxRatesPage = () => {
