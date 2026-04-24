@@ -75,7 +75,7 @@ const ErpDashboard = () => {
         if (code.startsWith("4")) m.revenue += Number(e.credit) - Number(e.debit);
         if (code.startsWith("5") || code.startsWith("6")) m.expenses += Number(e.debit) - Number(e.credit);
       });
-      setSeries(months.map(({ key, ...rest }) => rest));
+      setSeries(months.map(({ month, revenue, expenses }) => ({ month, revenue, expenses })));
 
       setRecent((recentRes.data || []));
     };

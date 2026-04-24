@@ -24,7 +24,7 @@ const schema = z.object({
   reference: z.string().optional(),
   lines: z.array(lineSchema).min(1),
 });
-type FormVals = z.infer<typeof schema>;
+type FormVals = z.input<typeof schema>;
 
 interface Party { id: string; name: string; }
 interface Tax { id: string; name: string; rate: number; }

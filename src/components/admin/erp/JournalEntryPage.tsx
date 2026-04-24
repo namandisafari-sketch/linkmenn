@@ -26,7 +26,7 @@ const schema = z.object({
   narration: z.string().max(500).optional(),
   lines: z.array(lineSchema).min(2, "At least 2 lines"),
 });
-type FormVals = z.infer<typeof schema>;
+type FormVals = z.input<typeof schema>;
 
 interface AcctRow { id: string; code: string; name: string; }
 

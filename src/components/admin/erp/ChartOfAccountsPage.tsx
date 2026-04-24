@@ -18,7 +18,7 @@ const schema = z.object({
   name: z.string().trim().min(2).max(120),
   opening_balance: z.coerce.number().default(0),
 });
-type FormVals = z.infer<typeof schema>;
+type FormVals = z.input<typeof schema>;
 
 interface AcctRow { id: string; code: string; name: string; opening_balance: number; is_system: boolean; }
 interface LedgerAgg { account_id: string; debit: number; credit: number; }
@@ -80,7 +80,7 @@ const ChartOfAccountsPage = () => {
   const openEdit = (r: AcctRow) => { setEditing(r); form.reset({ code: r.code, name: r.name, opening_balance: Number(r.opening_balance) || 0 }); setOpen(true); };
 
   const onSubmit = async (vals: FormVals) => {
-    const payload = { ...vals };
+    const payload = { ...vals, opening_balance: Number(vals.opening_balance) || 0 };
     if (editing) {
       const { error } = await supabase.from("accounts").update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message);
@@ -96,7 +96,7 @@ const ChartOfAccountsPage = () => {
 
   const toggle = (t: AcctType) => {
     const n = new Set(collapsed);
-    n.has(t) ? n.delete(t) : n.add(t);
+    if (n.has(t)) n.delete(t); else n.add(t);
     setCollapsed(n);
   };
 

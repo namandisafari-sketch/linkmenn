@@ -20,7 +20,7 @@ const schema = z.object({
   sale_price: z.coerce.number().min(0).default(0),
   stock_qty: z.coerce.number().default(0),
 });
-type V = z.infer<typeof schema>;
+type V = z.input<typeof schema>;
 interface Item { id: string; code: string; name: string; unit: string | null; cost_price: number; sale_price: number; stock_qty: number; }
 
 const InventoryItemsPage = () => {
