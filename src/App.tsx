@@ -55,6 +55,31 @@ const App = () => (
               <Route path="/admin/reports-hub" element={<AdminDashboard />} />
               <Route path="/admin/audit" element={<AdminDashboard />} />
               <Route path="/admin/grn" element={<AdminDashboard />} />
+
+              {/* ERP routes */}
+              <Route path="/admin/coa" element={<AdminDashboard />} />
+              <Route path="/admin/journal" element={<AdminDashboard />} />
+              <Route path="/admin/ledger" element={<AdminDashboard />} />
+              <Route path="/admin/trial-balance" element={<AdminDashboard />} />
+              <Route path="/admin/invoices" element={<AdminDashboard />} />
+              <Route path="/admin/customers" element={<AdminDashboard />} />
+              <Route path="/admin/receipts" element={<AdminDashboard />} />
+              <Route path="/admin/bills" element={<AdminDashboard />} />
+              <Route path="/admin/payments" element={<AdminDashboard />} />
+              <Route path="/admin/items" element={<AdminDashboard />} />
+              <Route path="/admin/stock-movement" element={<AdminDashboard />} />
+              <Route path="/admin/employees" element={<AdminDashboard />} />
+              <Route path="/admin/payruns" element={<AdminDashboard />} />
+              <Route path="/admin/tax-rates" element={<AdminDashboard />} />
+              <Route path="/admin/vat-returns" element={<AdminDashboard />} />
+              <Route path="/admin/pnl" element={<AdminDashboard />} />
+              <Route path="/admin/balance-sheet" element={<AdminDashboard />} />
+              <Route path="/admin/cash-flow" element={<AdminDashboard />} />
+              <Route path="/admin/aged-debtors" element={<AdminDashboard />} />
+              <Route path="/admin/fiscal-year" element={<AdminDashboard />} />
+              <Route path="/admin/company" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminDashboard />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

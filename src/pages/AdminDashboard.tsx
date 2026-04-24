@@ -334,6 +334,39 @@ const AdminDashboard = () => {
     if (path === "/admin/reports-hub") return <ReportsHubPage />;
     if (path === "/admin/audit") return <AuditLogPage />;
     if (path === "/admin/grn") return <GRNEntryPage />;
+
+    // ERP - Accounting
+    if (path === "/admin/coa") return <ChartOfAccountsPage />;
+    if (path === "/admin/journal") return <JournalEntryPage />;
+    if (path === "/admin/ledger") return <LedgerPage />;
+    if (path === "/admin/trial-balance") return <TrialBalancePage />;
+    // ERP - Sales
+    if (path === "/admin/invoices") return <InvoicePage />;
+    if (path === "/admin/customers") return <PartiesPage />;
+    if (path === "/admin/receipts") return <StubPage title="Receipts" description="Record customer payments against invoices." />;
+    // ERP - Purchases
+    if (path === "/admin/bills") return <StubPage title="Bills" description="Supplier bills and purchase invoices." />;
+    if (path === "/admin/payments") return <StubPage title="Payments" description="Outgoing payments to suppliers." />;
+    // ERP - Inventory
+    if (path === "/admin/items") return <InventoryItemsPage />;
+    if (path === "/admin/stock-movement") return <StubPage title="Stock Movement" description="Track inventory in/out across batches." />;
+    // ERP - Payroll
+    if (path === "/admin/employees") return <StubPage title="Employees" description="Manage employee records and salaries." />;
+    if (path === "/admin/payruns") return <StubPage title="Pay Runs" description="Process monthly payroll, PAYE, NSSF." />;
+    // ERP - Tax
+    if (path === "/admin/tax-rates") return <TaxRatesPage />;
+    if (path === "/admin/vat-returns") return <StubPage title="VAT Returns" description="Generate URA-compliant VAT return summaries." />;
+    // ERP - Reports
+    if (path === "/admin/pnl") return <StubPage title="Profit & Loss" description="Income statement for the selected period." />;
+    if (path === "/admin/balance-sheet") return <StubPage title="Balance Sheet" description="Assets, Liabilities and Equity snapshot." />;
+    if (path === "/admin/cash-flow") return <StubPage title="Cash Flow" description="Operating, investing and financing activities." />;
+    if (path === "/admin/aged-debtors") return <StubPage title="Aged Debtors" description="Outstanding receivables aging buckets." />;
+    // ERP - Settings
+    if (path === "/admin/fiscal-year") return <FiscalYearsPage />;
+    if (path === "/admin/company") return <StubPage title="Company Info" description="Company legal name, address, VAT number." />;
+    if (path === "/admin/users") return <StubPage title="Users & Roles" description="Manage user accounts and role assignments." />;
+
+    if (path === "/admin") return <ErpDashboard />;
     return <DashboardOverview />;
   };
 
@@ -358,6 +391,30 @@ const AdminDashboard = () => {
     if (path === "/admin/reports-hub") return "Financial Reports";
     if (path === "/admin/audit") return "Audit Trail";
     if (path === "/admin/grn") return "Goods Received Note";
+
+    if (path === "/admin/coa") return "Chart of Accounts";
+    if (path === "/admin/journal") return "Journal Entry";
+    if (path === "/admin/ledger") return "Ledger";
+    if (path === "/admin/trial-balance") return "Trial Balance";
+    if (path === "/admin/invoices") return "Invoices";
+    if (path === "/admin/customers") return "Customers & Suppliers";
+    if (path === "/admin/receipts") return "Receipts";
+    if (path === "/admin/bills") return "Bills";
+    if (path === "/admin/payments") return "Payments";
+    if (path === "/admin/items") return "Inventory Items";
+    if (path === "/admin/stock-movement") return "Stock Movement";
+    if (path === "/admin/employees") return "Employees";
+    if (path === "/admin/payruns") return "Pay Runs";
+    if (path === "/admin/tax-rates") return "Tax Rates";
+    if (path === "/admin/vat-returns") return "VAT Returns";
+    if (path === "/admin/pnl") return "Profit & Loss";
+    if (path === "/admin/balance-sheet") return "Balance Sheet";
+    if (path === "/admin/cash-flow") return "Cash Flow";
+    if (path === "/admin/aged-debtors") return "Aged Debtors";
+    if (path === "/admin/fiscal-year") return "Fiscal Year";
+    if (path === "/admin/company") return "Company Info";
+    if (path === "/admin/users") return "Users & Roles";
+
     return "Dashboard";
   };
 
