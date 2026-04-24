@@ -32,9 +32,10 @@ const TaxRatesPage = () => {
   useEffect(() => { load(); }, []);
 
   const onSubmit = async (v: V) => {
+    const payload = { ...v, rate: Number(v.rate) || 0 };
     const { error } = editing
-      ? await supabase.from("tax_rates").update(v).eq("id", editing.id)
-      : await supabase.from("tax_rates").insert([v as any]);
+      ? await supabase.from("tax_rates").update(payload).eq("id", editing.id)
+      : await supabase.from("tax_rates").insert([payload as any]);
     if (error) return toast.error(error.message);
     toast.success("Saved"); setOpen(false); load();
   };
